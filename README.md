@@ -72,3 +72,17 @@ After the script finishes, you should obtain results close to (the mean absolute
 | range   | density | assortativity | transitivity | clustering |
 | ------- | ------- | ------------: | -----------: | ---------: |
 | 0.6–1.0 | 1.89    |          10.9 |         7.23 |       7.13 |
+
+---
+## Citation
+
+If you find our work helpful, please cite us:
+```bibtex
+@inproceedings{xi2026copho,
+  title={CoPHo: Classifier-guided Conditional Topology Generation with Persistent Homology},
+  author={Xi, Gongli and Tian, Ye and Yang, Mengyu and Zhao, Zhenyu and Zhang, Yuchao and Gong Xiangyang and Que, Xirong and Wang, Wendong},
+  booktitle={Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining V.1},
+  year={2026}
+}
+```
+[![DOI](https://zenodo.org/badge/1115012081.svg)](https://doi.org/10.5281/zenodo.18042767)
