@@ -22,6 +22,7 @@ src/analysis/spectre_utils.py
 src/analysis/visualization.py
 src/datasets/__init__.py
 src/datasets/abstract_dataset.py
+src/datasets/dimacs_dataset.py
 src/datasets/enzymes_dataset.py
 src/datasets/guacamol_dataset.py
 src/datasets/moses_dataset.py

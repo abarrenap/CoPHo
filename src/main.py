@@ -18,7 +18,7 @@ from src import utils
 from metrics.abstract_metrics import TrainAbstractMetricsDiscrete, TrainAbstractMetrics
 
 from diffusion_model import LiftedDenoisingDiffusion
-from diffusion_model_discrete_persisthomo import DiscreteDenoisingDiffusion
+from diffusion_model_discrete import DiscreteDenoisingDiffusion
 from diffusion.extra_features import DummyExtraFeatures, ExtraFeatures
 from models.GNN_model import GraphDistanceModel, GraphStructModel
 from models import condi_config
@@ -101,6 +101,30 @@ def main(cfg: DictConfig):
             sampling_metrics = PlanarSamplingMetrics(datamodule)
 
         dataset_infos = SpectreDatasetInfos(datamodule, dataset_config)
+        train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == 'discrete' else TrainAbstractMetrics()
+        visualization_tools = NonMolecularVisualization()
+
+        if cfg.model.type == 'discrete' and cfg.model.extra_features is not None:
+            extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)
+        else:
+            extra_features = DummyExtraFeatures()
+        domain_features = DummyExtraFeatures()
+
+        dataset_infos.compute_input_output_dims(datamodule=datamodule, extra_features=extra_features,
+                                                domain_features=domain_features)
+
+        model_kwargs = {'dataset_infos': dataset_infos, 'train_metrics': train_metrics,
+                        'sampling_metrics': sampling_metrics, 'visualization_tools': visualization_tools,
+                        'extra_features': extra_features, 'domain_features': domain_features}
+
+    elif dataset_config["name"] == 'dimacs':
+        from datasets.dimacs_dataset import DIMACSDataModule, DIMACSDatasetInfos
+        from analysis.spectre_utils import SBMSamplingMetrics
+        from analysis.visualization import NonMolecularVisualization
+
+        datamodule = DIMACSDataModule(cfg)
+        sampling_metrics = SBMSamplingMetrics(datamodule)
+        dataset_infos = DIMACSDatasetInfos(datamodule.datasets)
         train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == 'discrete' else TrainAbstractMetrics()
         visualization_tools = NonMolecularVisualization()
 
@@ -200,13 +224,15 @@ def main(cfg: DictConfig):
         model.assign_guidance_model(guidance_model)
     callbacks = []
     if cfg.train.save_model:
-        checkpoint_callback = ModelCheckpoint(dirpath=f"checkpoints/{cfg.general.name}",
+        ckpt_dir = os.path.join(os.getcwd(), f"checkpoints/{cfg.general.name}")
+        os.makedirs(ckpt_dir, exist_ok=True)
+        checkpoint_callback = ModelCheckpoint(dirpath=ckpt_dir,
                                               filename='{epoch}',
                                               monitor='val/epoch_NLL',
                                               save_top_k=5,
                                               mode='min',
                                               every_n_epochs=1)
-        last_ckpt_save = ModelCheckpoint(dirpath=f"checkpoints/{cfg.general.name}", filename='last', every_n_epochs=1)
+        last_ckpt_save = ModelCheckpoint(dirpath=ckpt_dir, filename='last', every_n_epochs=1)
         callbacks.append(last_ckpt_save)
         callbacks.append(checkpoint_callback)
 
@@ -252,5 +278,7 @@ if __name__ == '__main__':
     os.environ['MASTER_PORT'] = '12348'
     
     import torch.distributed as dist
-    dist.init_process_group(backend='nccl',rank=0, world_size = 1)
+    # Use 'gloo' backend for CPU/Mac instead of 'nccl' (GPU only)
+    backend = 'gloo' if not torch.cuda.is_available() else 'nccl'
+    dist.init_process_group(backend=backend, rank=0, world_size=1)
     main()

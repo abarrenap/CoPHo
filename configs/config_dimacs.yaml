@@ -1,0 +1,12 @@
+defaults:
+    - _self_
+    - general: general_default_dimacs
+    - model: discrete_dimacs
+    - train: train_default_dimacs
+    - dataset: dimacs
+
+hydra:
+  job:
+    chdir: True
+  run:
+    dir: ../outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}-${general.name}

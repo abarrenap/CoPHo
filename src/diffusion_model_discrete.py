@@ -6,6 +6,11 @@ import time
 import wandb
 import os
 
+try:
+    from opacus import PrivacyEngine
+except ImportError:
+    PrivacyEngine = None
+
 from models.transformer_model import GraphTransformer
 from diffusion.noise_schedule import DiscreteUniformTransition, PredefinedNoiseScheduleDiscrete,\
     MarginalUniformTransition
@@ -103,7 +108,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.number_chain_steps = cfg.general.number_chain_steps
         self.best_val_nll = 1e8
         self.val_counter = 0
-        self.privacy_engine = PrivacyEngine()
+        self.privacy_engine = PrivacyEngine() if PrivacyEngine is not None else None
 
     # def training_step(self, data, i):
     #     if data.edge_index.numel() == 0:
