@@ -370,14 +370,18 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             for item in samples:
                 f.write(f"N={item[0].shape[0]}\n")
                 atoms = item[0].tolist()
-                f.write("X: \n")
+                f.write("X:\n")
                 for at in atoms:
-                    f.write(f"{at} ")
+                    if isinstance(at, list):
+                        for val in at:
+                            f.write(f"{int(val)} ")
+                    else:
+                        f.write(f"{int(at)} ")
                 f.write("\n")
-                f.write("E: \n")
+                f.write("E:\n")
                 for bond_list in item[1]:
                     for bond in bond_list:
-                        f.write(f"{bond} ")
+                        f.write(f"{float(bond):.6f} ")
                     f.write("\n")
                 f.write("\n")
         self.print("Generated graphs Saved. Computing sampling metrics...")

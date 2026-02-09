@@ -38,11 +38,12 @@ class TSPDataset(InMemoryDataset):
             num_nodes = adj.shape[0]
             # Convert adjacency matrix to edge_index
             edge_index = (adj > 0).nonzero(as_tuple=False).t().contiguous()
-            # edge_attr: [0, 1, peso] para cada arista
-            edge_weights = adj[adj > 0].unsqueeze(1)  # Peso de la arista
-            zeros = torch.zeros_like(edge_weights)
-            ones = torch.ones_like(edge_weights)
-            edge_attr = torch.cat([zeros, ones, edge_weights], dim=1)  # [0, 1, peso]
+            
+            # Para TSP: edge_attr solo contiene el peso (1 dimensión)
+            # El peso 0 indica que no hay arista
+            edge_weights = adj[adj > 0].unsqueeze(1)  # Peso de la arista (bs, 1)
+            edge_attr = edge_weights  # Solo el peso, sin encoding adicional
+            
             x = torch.ones((num_nodes, 1), dtype=torch.float32)  # Nodo dummy
             data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, num_nodes=num_nodes)
             # y debe existir pero vacío

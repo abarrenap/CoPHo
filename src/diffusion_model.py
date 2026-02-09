@@ -215,7 +215,7 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                 samples_left_to_generate -= to_generate
                 chains_left_to_save -= chains_save
 
-            self.sampling_metrics(samples, self.name, self.current_epoch, val_counter=-1, test=False)
+            self.sampling_metrics(samples, self.name, self.current_epoch, val_counter=-1, test=False, local_rank=0)
             print(f'Sampling took {time.time() - start:.2f} seconds\n')
             self.sampling_metrics.reset()
 
@@ -293,17 +293,31 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
         self.sampling_metrics.reset()
 
         # Save generated samples to a text file for visualization
-        output_path = os.path.join(os.getcwd(), f'generated_graphs_epoch{self.current_epoch}.txt')
-        with open(output_path, 'w') as f:
-            f.write(f'Graphs generated at the end of the test (epoch {self.current_epoch}):\n')
-            for i, sample in enumerate(samples):
-                f.write(f'Graph {i+1}:\n')
-                atom_types, edge_types = sample
-                f.write(f'  Nodes: {atom_types.tolist()}\n')
-                f.write(f'  Edges:\n')
-                f.write(str(edge_types.tolist()) + '\n')
-                f.write('\n')
-        print(f"Generated graphs saved in {output_path}")
+        print("Saving the generated graphs")
+        filename = f'generated_samples1.txt'
+        for i in range(2, 10):
+            if os.path.exists(filename):
+                filename = f'generated_samples{i}.txt'
+            else:
+                break
+        with open(filename, 'w') as f:
+            for item in samples:
+                f.write(f"N={item[0].shape[0]}\n")
+                atoms = item[0].tolist()
+                f.write("X:\n")
+                for at in atoms:
+                    if isinstance(at, list):
+                        for val in at:
+                            f.write(f"{int(val)} ")
+                    else:
+                        f.write(f"{int(at)} ")
+                f.write("\n")
+                f.write("E:\n")
+                for bond_list in item[1]:
+                    for bond in bond_list:
+                        f.write(f"{float(bond):.6f} ")
+                    f.write("\n")
+                f.write("\n")
 
     def kl_prior(self, X, E, y, node_mask):
         """Computes the KL between q(z1 | x) and the prior p(z1) = Normal(0, 1).
@@ -647,19 +661,20 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
             final_X_chain = X[:keep_chain]
             final_E_chain = E[:keep_chain]
             
-            # Para la cadena de visualización, necesitamos colapsar a valores discretos
-            # independientemente del tipo de modelo
-            if self.cfg.model.type == 'continuous' and len(final_X_chain.shape) == 3:
-                # Si X aún tiene features, hacer argmax para la visualización
-                x_mask = node_mask[:keep_chain].unsqueeze(-1)
-                e_mask1 = x_mask.unsqueeze(2)
-                e_mask2 = x_mask.unsqueeze(1)
-                
-                final_X_chain = torch.argmax(final_X_chain, dim=-1)
-                final_E_chain = torch.argmax(final_E_chain, dim=-1)
-                
-                final_X_chain[node_mask[:keep_chain] == 0] = -1
-                final_E_chain[(e_mask1 * e_mask2).squeeze(-1) == 0] = -1
+            # Para modelos continuos, colapsar a valores discretos
+            # Para modelos discretos, los valores ya son discretos desde sample_discrete_graph_given_z0
+            if self.cfg.model.type == 'continuous':
+                # Solo hacer argmax si el tensor tiene una dimensión de features (es 3D o 4D)
+                if len(final_X_chain.shape) == 3:
+                    x_mask = node_mask[:keep_chain].unsqueeze(-1)
+                    e_mask1 = x_mask.unsqueeze(2)
+                    e_mask2 = x_mask.unsqueeze(1)
+                    
+                    final_X_chain = torch.argmax(final_X_chain, dim=-1)
+                    final_E_chain = torch.argmax(final_E_chain, dim=-1)
+                    
+                    final_X_chain[node_mask[:keep_chain] == 0] = -1
+                    final_E_chain[(e_mask1 * e_mask2).squeeze(-1) == 0] = -1
             
             chain_X[0] = final_X_chain
             chain_E[0] = final_E_chain
@@ -679,15 +694,22 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
             atom_types = X[i, :n].cpu()
             edge_types = E[i, :n, :n].cpu()
             
-            # Para modelos continuos con múltiples dimensiones de edge features,
-            # extraer la información relevante
-            if self.cfg.model.type == 'continuous' and len(edge_types.shape) == 3 and edge_types.shape[-1] > 1:
-                # Para TSP: edge_attr tiene formato [no_edge, edge_exists, weight]
-                # Extraer el peso (última dimensión) donde hay aristas
-                edge_exists = edge_types[:, :, 1] > edge_types[:, :, 0]  # Segunda dim > primera dim
-                weights = edge_types[:, :, -1]  # Última dimensión es el peso
-                # Crear matriz de pesos (0 donde no hay arista)
-                edge_types = weights * edge_exists.float()
+            # Para modelos continuos con edge_attr, extraer los valores
+            if self.cfg.model.type == 'continuous' and len(edge_types.shape) == 3:
+                if edge_types.shape[-1] == 1:
+                    # TSP simplificado: edge_attr es solo el peso (1 dimensión)
+                    edge_types = edge_types.squeeze(-1)  # (n, n, 1) -> (n, n)
+                    # Asegurar que los pesos sean no negativos
+                    edge_types = torch.clamp(edge_types, min=0.0)
+                elif edge_types.shape[-1] > 1:
+                    # Formato antiguo o múltiples features: usar la última dimensión como peso
+                    # y las primeras como indicadores de arista
+                    edge_exists_logits = edge_types[:, :, :2]  # [no_edge, edge_exists]
+                    edge_exists = torch.argmax(edge_exists_logits, dim=-1)  # 0 = no edge, 1 = edge
+                    weights = edge_types[:, :, -1]  # Última dimensión es el peso
+                    # Crear matriz de pesos (solo mantener peso donde hay arista)
+                    edge_types = weights * edge_exists.float()
+                    edge_types = torch.clamp(edge_types, min=0.0)
             
             molecule_list.append([atom_types, edge_types])
 

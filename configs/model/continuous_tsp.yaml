@@ -1,7 +1,7 @@
 # Model settings
 type: 'continuous'
 model: 'graph_tf'
-diffusion_steps: 500
+diffusion_steps: 1000
 diffusion_noise_schedule: 'cosine'              # 'cosine', 'polynomial_2'
 n_layers: 6
 
@@ -13,7 +13,10 @@ hidden_mlp_dims: {'X': 256, 'E': 128, 'y': 128}
 # The dimensions should satisfy dx % n_head == 0
 hidden_dims : {'dx': 256, 'de': 64, 'dy': 64, 'n_head': 8, 'dim_ffX': 256, 'dim_ffE': 128, 'dim_ffy': 128}
 
-normalize_factors: [2, 1, 1]
+# Para TSP: normalizar pesos (rango 10-60) con factor 10
+# normalize_factors: [node_norm, edge_norm, y_norm]
+# Con factor 10, los pesos quedan en rango aproximado [1, 6]
+normalize_factors: [2, 10, 1]
 norm_biases: [0, 0, 0]
 
 lambda_train: [5, 0]

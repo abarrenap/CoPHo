@@ -18,7 +18,7 @@ def generate_tsp_adjacency_matrix_int(num_nodes, min_weight=1, max_weight=100):
             adj_matrix[i][j] = adj_matrix[j][i] = weight
     return adj_matrix
 
-def generate_tsp_dataset_int(n_graphs, max_size, min_weight=1, max_weight=100):
+def generate_tsp_dataset_int(n_graphs, max_size, min_size=20, min_weight=1, max_weight=100):
     """
     Generate a dataset of TSP graphs as adjacency matrices with integer weights.
     :param n_graphs: total number of graphs
@@ -29,7 +29,7 @@ def generate_tsp_dataset_int(n_graphs, max_size, min_weight=1, max_weight=100):
     """
     dataset = []
     for _ in range(n_graphs):
-        size = random.randint(5, max_size)  # at least 5 nodes
+        size = random.randint(min_size, max_size)  # at least 20 nodes
         adj_matrix = generate_tsp_adjacency_matrix_int(size, min_weight, max_weight)
         dataset.append(adj_matrix.tolist())  # convert to list for JSON compatibility
     return dataset
@@ -44,7 +44,10 @@ def save_dataset(dataset, filename="tsp_dataset.json"):
 
 # Example usage
 if __name__ == "__main__":
-    n_graphs = 100  # number of graphs
-    max_size = 20   # max nodes per graph
-    dataset = generate_tsp_dataset_int(n_graphs, max_size)
+    n_graphs = 250  # number of graphs
+    max_size = 50   # max nodes per graph
+    min_size = 10    # minimum nodes per graph
+    max_weight = 60  # maximum edge weight
+    min_weight = 10    # minimum edge weight
+    dataset = generate_tsp_dataset_int(n_graphs, max_size, min_size, min_weight, max_weight)
     save_dataset(dataset)
