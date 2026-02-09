@@ -289,8 +289,21 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
             chains_left_to_save -= chains_save
 
         self.sampling_metrics.reset()
-        self.sampling_metrics(samples, self.name, self.current_epoch, self.val_counter, test=True)
+        self.sampling_metrics(samples, self.name, self.current_epoch, self.val_counter, test=True, local_rank=0)
         self.sampling_metrics.reset()
+
+        # Save generated samples to a text file for visualization
+        output_path = os.path.join(os.getcwd(), f'generated_graphs_epoch{self.current_epoch}.txt')
+        with open(output_path, 'w') as f:
+            f.write(f'Graphs generated at the end of the test (epoch {self.current_epoch}):\n')
+            for i, sample in enumerate(samples):
+                f.write(f'Graph {i+1}:\n')
+                atom_types, edge_types = sample
+                f.write(f'  Nodes: {atom_types.tolist()}\n')
+                f.write(f'  Edges:\n')
+                f.write(str(edge_types.tolist()) + '\n')
+                f.write('\n')
+        print(f"Generated graphs saved in {output_path}")
 
     def kl_prior(self, X, E, y, node_mask):
         """Computes the KL between q(z1 | x) and the prior p(z1) = Normal(0, 1).
@@ -624,23 +637,30 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
             average_X_coord.append(X.abs().mean().item())
             average_E_coord.append(E.abs().mean().item())
 
-        print(f"Average X coordinate at each step {[int(c) for i, c in enumerate(average_X_coord) if i % 10 == 0]}")
-        print(f"Average E coordinate at each step {[int(c) for i, c in enumerate(average_E_coord) if i % 10 == 0]}")
-
         # Finally sample the discrete data given the last latent code z0
         final_graph = self.sample_discrete_graph_given_z0(X, E, y, node_mask)
         X, E, y = final_graph.X, final_graph.E, final_graph.y
         assert (E == torch.transpose(E, 1, 2)).all()
 
-        print("Examples of generated graphs:")
-        for i in range(min(5, X.shape[0])):
-            print("E", E[i])
-            print("X: ", X[i])
-
         # Prepare the chain for saving
         if keep_chain > 0:
             final_X_chain = X[:keep_chain]
             final_E_chain = E[:keep_chain]
+            
+            # Para la cadena de visualización, necesitamos colapsar a valores discretos
+            # independientemente del tipo de modelo
+            if self.cfg.model.type == 'continuous' and len(final_X_chain.shape) == 3:
+                # Si X aún tiene features, hacer argmax para la visualización
+                x_mask = node_mask[:keep_chain].unsqueeze(-1)
+                e_mask1 = x_mask.unsqueeze(2)
+                e_mask2 = x_mask.unsqueeze(1)
+                
+                final_X_chain = torch.argmax(final_X_chain, dim=-1)
+                final_E_chain = torch.argmax(final_E_chain, dim=-1)
+                
+                final_X_chain[node_mask[:keep_chain] == 0] = -1
+                final_E_chain[(e_mask1 * e_mask2).squeeze(-1) == 0] = -1
+            
             chain_X[0] = final_X_chain
             chain_E[0] = final_E_chain
 
@@ -658,6 +678,17 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
             n = n_nodes[i]
             atom_types = X[i, :n].cpu()
             edge_types = E[i, :n, :n].cpu()
+            
+            # Para modelos continuos con múltiples dimensiones de edge features,
+            # extraer la información relevante
+            if self.cfg.model.type == 'continuous' and len(edge_types.shape) == 3 and edge_types.shape[-1] > 1:
+                # Para TSP: edge_attr tiene formato [no_edge, edge_exists, weight]
+                # Extraer el peso (última dimensión) donde hay aristas
+                edge_exists = edge_types[:, :, 1] > edge_types[:, :, 0]  # Segunda dim > primera dim
+                weights = edge_types[:, :, -1]  # Última dimensión es el peso
+                # Crear matriz de pesos (0 donde no hay arista)
+                edge_types = weights * edge_exists.float()
+            
             molecule_list.append([atom_types, edge_types])
 
         # Visualize chains
@@ -711,7 +742,22 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
         assert (sampled.E == torch.transpose(sampled.E, 1, 2)).all()
 
         sampled = utils.unnormalize(sampled.X, sampled.E, sampled.y, self.norm_values,
-                                    self.norm_biases, node_mask, collapse=True)
+                                    self.norm_biases, node_mask, collapse=False)
+        
+        # Para modelos continuos (continuous type), mantener valores continuos
+        # Solo colapsar a categorías discretas si el modelo es explícitamente discreto
+        if self.cfg.model.type == 'discrete':
+            # Aplicar colapso solo para modelos discretos
+            x_mask = node_mask.unsqueeze(-1)
+            e_mask1 = x_mask.unsqueeze(2)
+            e_mask2 = x_mask.unsqueeze(1)
+            
+            sampled.X = torch.argmax(sampled.X, dim=-1)
+            sampled.E = torch.argmax(sampled.E, dim=-1)
+            
+            sampled.X[node_mask == 0] = -1
+            sampled.E[(e_mask1 * e_mask2).squeeze(-1) == 0] = -1
+        
         return sampled
 
     def sample_p_zs_given_zt(self, s, t, X_t, E_t, y_t, node_mask):

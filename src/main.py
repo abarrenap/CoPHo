@@ -117,6 +117,7 @@ def main(cfg: DictConfig):
                         'sampling_metrics': sampling_metrics, 'visualization_tools': visualization_tools,
                         'extra_features': extra_features, 'domain_features': domain_features}
 
+
     elif dataset_config["name"] == 'dimacs':
         from datasets.dimacs_dataset import DIMACSDataModule, DIMACSDatasetInfos
         from analysis.spectre_utils import SBMSamplingMetrics
@@ -127,6 +128,30 @@ def main(cfg: DictConfig):
         dataset_infos = DIMACSDatasetInfos(datamodule.datasets)
         train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == 'discrete' else TrainAbstractMetrics()
         visualization_tools = NonMolecularVisualization()
+
+        if cfg.model.type == 'discrete' and cfg.model.extra_features is not None:
+            extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)
+        else:
+            extra_features = DummyExtraFeatures()
+        domain_features = DummyExtraFeatures()
+
+        dataset_infos.compute_input_output_dims(datamodule=datamodule, extra_features=extra_features,
+                                                domain_features=domain_features)
+
+        model_kwargs = {'dataset_infos': dataset_infos, 'train_metrics': train_metrics,
+                        'sampling_metrics': sampling_metrics, 'visualization_tools': visualization_tools,
+                        'extra_features': extra_features, 'domain_features': domain_features}
+
+    elif dataset_config["name"] == 'tsp':
+        from datasets.tsp_dataset import TSPDataModule, TSPDatasetInfos
+        from analysis.spectre_utils import TSPSamplingMetrics
+        from analysis.visualization import WeightedVisualization
+
+        datamodule = TSPDataModule(cfg)
+        sampling_metrics = TSPSamplingMetrics(datamodule)
+        dataset_infos = TSPDatasetInfos(datamodule.datasets)
+        train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == 'discrete' else TrainAbstractMetrics()
+        visualization_tools = WeightedVisualization()
 
         if cfg.model.type == 'discrete' and cfg.model.extra_features is not None:
             extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)

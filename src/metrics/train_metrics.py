@@ -26,12 +26,9 @@ class TrainLoss(nn.Module):
         self.train_y_mse = MeanSquaredError()
 
     def forward(self, masked_pred_epsX, masked_pred_epsE, pred_y, true_epsX, true_epsE, true_y, log: bool):
-        mse_X = self.train_node_mse(masked_pred_epsX, true_epsX) if true_epsX.numel() > 0 else 0.0
-        mse_E = self.train_edge_mse(masked_pred_epsE, true_epsE) if true_epsE.numel() > 0 else 0.0
-        mse_y = self.train_y_mse(pred_y, true_y) if true_y.numel() > 0 else 0.0
-        print("mse grad", mse_X.requires_grad)
-        print("mse grad", mse_E.requires_grad)
-        print("mse grad", mse_y.requires_grad)
+        mse_X = self.train_node_mse(masked_pred_epsX, true_epsX) if true_epsX.numel() > 0 else torch.tensor(0.0, device=masked_pred_epsX.device)
+        mse_E = self.train_edge_mse(masked_pred_epsE, true_epsE) if true_epsE.numel() > 0 else torch.tensor(0.0, device=masked_pred_epsE.device)
+        mse_y = self.train_y_mse(pred_y, true_y) if true_y.numel() > 0 else torch.tensor(0.0, device=pred_y.device)
         mse = mse_X + mse_E + mse_y
 
         if log:
@@ -95,10 +92,10 @@ class TrainLossDiscrete(nn.Module):
         flat_true_E = true_E[mask_E, :]
         flat_pred_E = masked_pred_E[mask_E, :]
 
-        loss_X = self.node_loss(flat_pred_X, flat_true_X) if true_X.numel() > 0 else 0.0
-        loss_E = self.edge_loss(flat_pred_E, flat_true_E) if true_E.numel() > 0 else 0.0
-        #loss_y = self.y_loss(pred_y, true_y) if true_y.numel() > 0 else 0.0
-        loss_y = 0.0
+        loss_X = self.node_loss(flat_pred_X, flat_true_X) if true_X.numel() > 0 else torch.tensor(0.0, device=masked_pred_X.device)
+        loss_E = self.edge_loss(flat_pred_E, flat_true_E) if true_E.numel() > 0 else torch.tensor(0.0, device=masked_pred_E.device)
+        #loss_y = self.y_loss(pred_y, true_y) if true_y.numel() > 0 else torch.tensor(0.0, device=pred_y.device)
+        loss_y = torch.tensor(0.0, device=masked_pred_X.device)
 
         if log:
             to_log = {"train_loss/batch_CE": (loss_X + loss_E + loss_y).detach(),

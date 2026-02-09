@@ -879,3 +879,60 @@ class SBMSamplingMetrics(SpectreSamplingMetrics):
         super().__init__(datamodule=datamodule,
                          compute_emd=False,
                          metrics_list=['degree', 'clustering', 'orbit', 'spectre', 'sbm'])
+
+
+class TSPSamplingMetrics(SpectreSamplingMetrics):
+    def __init__(self, datamodule):
+        super().__init__(datamodule=datamodule,
+                         compute_emd=False,
+                         metrics_list=['degree', 'clustering', 'tsp'])
+        # Importar métricas específicas de TSP
+        from src.metrics.tsp_metrics import TSPValidity, TSPTourLength, TSPGraphDensity
+        self.tsp_validity = TSPValidity()
+        self.tsp_tour_length = TSPTourLength()
+        self.tsp_density = TSPGraphDensity()
+    
+    def forward(self, generated_graphs: list, name, current_epoch, val_counter, local_rank, test=False):
+        # Primero ejecutar las métricas generales
+        super().forward(generated_graphs, name, current_epoch, val_counter, local_rank, test)
+        
+        # Luego calcular métricas específicas de TSP
+        if local_rank == 0:
+            print("Computing TSP-specific metrics...")
+        
+        # Procesar cada grafo individualmente (pueden tener diferentes tamaños)
+        for graph in generated_graphs:
+            node_types, edge_types = graph
+            # edge_types ya es una matriz de adyacencia con pesos
+            # Añadir dimensión de batch
+            adj_matrix = edge_types.unsqueeze(0)
+            
+            # Calcular métricas TSP
+            self.tsp_validity.update(adj_matrix)
+            self.tsp_tour_length.update(adj_matrix)
+            self.tsp_density.update(adj_matrix)
+        
+        if len(generated_graphs) > 0:
+            tsp_valid = self.tsp_validity.compute()
+            tsp_tour = self.tsp_tour_length.compute()
+            tsp_dens = self.tsp_density.compute()
+            
+            to_log = {
+                'tsp/validity': tsp_valid.item(),
+                'tsp/avg_tour_length': tsp_tour.item() if tsp_tour != float('inf') else -1,
+                'tsp/graph_density': tsp_dens.item()
+            }
+            
+            if local_rank == 0:
+                print(f"TSP Metrics: Validity={tsp_valid:.4f}, Avg Tour={tsp_tour:.2f}, Density={tsp_dens:.4f}")
+            
+            if wandb.run:
+                wandb.log(to_log, commit=False)
+                wandb.run.summary['tsp_validity'] = tsp_valid.item()
+                wandb.run.summary['tsp_avg_tour_length'] = tsp_tour.item() if tsp_tour != float('inf') else -1
+                wandb.run.summary['tsp_graph_density'] = tsp_dens.item()
+            
+            # Resetear métricas
+            self.tsp_validity.reset()
+            self.tsp_tour_length.reset()
+            self.tsp_density.reset()

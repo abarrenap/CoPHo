@@ -1,0 +1,64 @@
+general:
+  name: tsp_exp1
+  wandb: disabled
+  gpus: 1
+  resume: null
+  test_only: null
+  guidance_path: null
+  check_val_every_n_epochs: 5
+  sample_every_val: 4
+  val_check_interval: null
+  samples_to_generate: 4
+  samples_to_save: 4
+  chains_to_save: 1
+  log_every_steps: 50
+  number_chain_steps: 50
+  final_model_samples_to_generate: 10
+  final_model_samples_to_save: 10
+  final_model_chains_to_save: 1
+  evaluate_all_checkpoints: false
+model:
+  type: continuous
+  model: graph_tf
+  diffusion_steps: 500
+  diffusion_noise_schedule: cosine
+  n_layers: 6
+  hidden_mlp_dims:
+    X: 256
+    E: 128
+    'y': 128
+  hidden_dims:
+    dx: 256
+    de: 64
+    dy: 64
+    n_head: 8
+    dim_ffX: 256
+    dim_ffE: 128
+    dim_ffy: 128
+  normalize_factors:
+  - 2
+  - 1
+  - 1
+  norm_biases:
+  - 0
+  - 0
+  - 0
+  lambda_train:
+  - 5
+  - 0
+train:
+  n_epochs: 2
+  batch_size: 2
+  lr: 0.0002
+  clip_grad: null
+  save_model: true
+  num_workers: 0
+  ema_decay: 0
+  progress_bar: true
+  weight_decay: 1.0e-12
+  optimizer: adamw
+  seed: 0
+dataset:
+  name: tsp
+  remove_h: null
+  datadir: /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/tsp/

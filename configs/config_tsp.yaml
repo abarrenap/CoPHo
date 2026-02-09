@@ -1,0 +1,16 @@
+defaults:
+  - _self_
+  - general : general_default_tsp
+  - model : continuous_tsp
+  - train : train_default_tsp
+  - dataset : tsp
+
+hydra:
+  job:
+    chdir: True
+  run:
+    dir: ../outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}-${general.name}
+
+
+
+
