@@ -142,6 +142,30 @@ def main(cfg: DictConfig):
                         'sampling_metrics': sampling_metrics, 'visualization_tools': visualization_tools,
                         'extra_features': extra_features, 'domain_features': domain_features}
 
+    elif dataset_config["name"] == 'mis':
+        from datasets.mis_dataset import MISDataModule, MISDatasetInfos
+        from analysis.spectre_utils import SBMSamplingMetrics
+        from analysis.visualization import NonMolecularVisualization
+
+        datamodule = MISDataModule(cfg)
+        sampling_metrics = SBMSamplingMetrics(datamodule)
+        dataset_infos = MISDatasetInfos(datamodule.datasets)
+        train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == 'discrete' else TrainAbstractMetrics()
+        visualization_tools = NonMolecularVisualization()
+
+        if cfg.model.type == 'discrete' and cfg.model.extra_features is not None:
+            extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)
+        else:
+            extra_features = DummyExtraFeatures()
+        domain_features = DummyExtraFeatures()
+
+        dataset_infos.compute_input_output_dims(datamodule=datamodule, extra_features=extra_features,
+                                                domain_features=domain_features)
+
+        model_kwargs = {'dataset_infos': dataset_infos, 'train_metrics': train_metrics,
+                        'sampling_metrics': sampling_metrics, 'visualization_tools': visualization_tools,
+                        'extra_features': extra_features, 'domain_features': domain_features}
+
     elif dataset_config["name"] == 'tsp':
         from datasets.tsp_dataset import TSPDataModule, TSPDatasetInfos
         from analysis.spectre_utils import TSPSamplingMetrics
