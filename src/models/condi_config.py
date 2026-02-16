@@ -23,7 +23,8 @@ condition_phase_s = homo_condition_phase_s
 condition_phase_e = homo_condition_phase_e
 condition_mode = 'top+'
 condition_is_undirected = True
-condition_target = ["density"] # clustering, assortativity, transitivity, density
+condition_target = ["embedding"]
+condition_threshold = 0.1
 
 all_condition_phase_s = 1.2
 all_condition_phase_e = 1.0

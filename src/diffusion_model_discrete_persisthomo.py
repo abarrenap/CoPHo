@@ -48,8 +48,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.Edim_output = output_dims['E']
         self.ydim_output = output_dims['y']
 
-        print(input_dims['y'])
-        print(output_dims['y'])
+        #print(input_dims['y'])
+        #print(output_dims['y'])
 
         self.node_dist = nodes_dist
         self.i = 0
@@ -256,10 +256,12 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                 to_save = min(samples_left_to_save, bs, len(y_cond))
                 chains_save = min(chains_left_to_save, bs, len(y_cond))
                 y_cond = y_cond[:to_generate]
-                samples.extend(self.sample_batch(batch_id=ident, batch_size=to_generate, num_nodes=None,
-                                                 save_final=to_save,
-                                                 keep_chain=chains_save,
-                                                 number_chain_steps=self.number_chain_steps, y_cond=y_cond))
+                molecule_list, _, _ = self.sample_batch(batch_id=ident, batch_size=to_generate, num_nodes=None,
+                                                        save_final=to_save,
+                                                        keep_chain=chains_save,
+                                                        number_chain_steps=self.number_chain_steps, y_cond=y_cond,
+                                                        cond=y_cond)
+                samples.extend(molecule_list)
                 ident += to_generate
 
                 samples_left_to_save -= to_save
@@ -314,10 +316,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         #self.print(f'Test loss: {test_nll :.4f}')
 
-        #samples_left_to_generate = self.cfg.general.final_model_samples_to_generate
-        #samples_left_to_save = self.cfg.general.final_model_samples_to_save
-        samples_left_to_generate = 17
-        samples_left_to_save = 17
+        samples_left_to_generate = self.cfg.general.final_model_samples_to_generate
+        samples_left_to_save = self.cfg.general.final_model_samples_to_save
         chains_left_to_save = self.cfg.general.final_model_chains_to_save
 
         print("samples_left_to_generate:", samples_left_to_generate)
@@ -326,7 +326,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         for data in test_loader:
             cond = data.cond.to(self.device)
             #print(data.X.shape, data.edge_attr.shape)
-            print("[DEBUG] cond shape", cond.shape)
+            #print("[DEBUG] cond shape", cond.shape)
             if cond.dim() == 1:
                 cond = cond.unsqueeze(dim=1)
             break
@@ -341,14 +341,14 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             to_generate = min(samples_left_to_generate, bs, len(cond))
             to_save = min(samples_left_to_save, bs, len(cond))
             chains_save = min(chains_left_to_save, bs, len(cond))
-            cond = cond[:to_generate]
+            cond_batch = cond[:to_generate]
 
             all_chain_X = []  # 用于保存所有 batch 的 chain_X
             all_chain_E = []  # 用于保存所有 batch 的 chain_E
 
             molecule_list, chain_X, chain_E = self.sample_batch(id, to_generate, num_nodes=None, save_final=to_save,
                                              keep_chain=chains_save, number_chain_steps=self.number_chain_steps,
-                                             y_cond=None, cond=cond)
+                                             y_cond=cond_batch, cond=cond_batch)
             samples.extend(molecule_list)
             all_chain_X.append(chain_X)
             all_chain_E.append(chain_E)
@@ -358,10 +358,9 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             chains_left_to_save -= chains_save
         self.print("Saving the generated graphs")
         for i in range(1, 50):
-            filename = (f"outputs/generated_samples|conditions-{self.condition_target[0]}|"
+            filename = (f"generated_samples|conditions-{self.condition_target[0]}|"
                         f"phase{self.condition_phase_s}-{self.condition_phase_e}|"
                         f"mode{self.condition_mode}-{i}.txt")
-            filename =  to_absolute_path(filename)
             if os.path.exists(filename):
                 continue
             else:
@@ -388,11 +387,9 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         # 设置一个新的文件名，用于保存中间链信息
         for i in range(1, 50):
-            chain_filename = (f"outputs/intermediate_chains_comm|conditions-{self.condition_target[0]}"
+            chain_filename = (f"intermediate_chains_comm|conditions-{self.condition_target[0]}"
                               f"|phase{self.condition_phase_s}-{self.condition_phase_e}|"
                               f"mode{self.condition_mode}-{i}.txt")
-            chain_filename =  to_absolute_path(chain_filename)
-
             if os.path.exists(chain_filename):
                 continue
             else:
@@ -639,7 +636,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         if y_cond is not None:
             # 确保 y_cond 的 shape 为 (batch_size, y_dim) 或可以广播到这个形状
-            print("[DEBUG] y_cond is not none")
+            #print("[DEBUG] y_cond is not none")
             y = y_cond
         else:
             print("[DEBUG] y_cond is none")
@@ -948,7 +945,11 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
             #  STEP 2: Compute the weight for each graph and return the final selected conditional graph ----- weight computation
             noisy_prime = condition_utils.condition_homo_check(
-                homo_list, cond, condi_config.condition_target, self.device
+                homo_list,
+                cond,
+                condi_config.condition_target,
+                self.device,
+                threshold=condi_config.condition_threshold,
             )
 
             #  STEP 3: Write the selected graph back into the generation pipeline ----- write back

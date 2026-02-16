@@ -18,7 +18,7 @@ from src import utils
 from metrics.abstract_metrics import TrainAbstractMetricsDiscrete, TrainAbstractMetrics
 
 from diffusion_model import LiftedDenoisingDiffusion
-from diffusion_model_discrete import DiscreteDenoisingDiffusion
+# Import será dinámico para soportar tanto discrete como persist_homo
 from diffusion.extra_features import DummyExtraFeatures, ExtraFeatures
 from models.GNN_model import GraphDistanceModel, GraphStructModel
 from models import condi_config
@@ -37,13 +37,22 @@ def get_resume(cfg, model_kwargs):
     name = cfg.general.name + '_resume'
     resume = cfg.general.test_only
     resume = to_absolute_path(resume)
-    #print(resume)
-    model = DiscreteDenoisingDiffusion.load_from_checkpoint(str(resume), **model_kwargs)
-    #print(resume)
+    
     if cfg.model.type == 'discrete':
-        model = DiscreteDenoisingDiffusion.load_from_checkpoint(resume, **model_kwargs)
+        use_persist_homo = cfg.model.get('use_persist_homo', False)
+        if use_persist_homo:
+            from diffusion_model_discrete_persisthomo import DiscreteDenoisingDiffusion
+        else:
+            from diffusion_model_discrete import DiscreteDenoisingDiffusion
+        model = DiscreteDenoisingDiffusion(cfg=cfg, **model_kwargs)
+        # Cargar checkpoint manualmente para filtrar guidance_model
+        ckpt = torch.load(resume)
+        state_dict = ckpt["state_dict"]
+        filtered_state_dict = {k: v for k, v in state_dict.items() if not k.startswith("guidance_model.")}
+        model.load_state_dict(filtered_state_dict, strict=False)
     else:
         model = LiftedDenoisingDiffusion.load_from_checkpoint(resume, **model_kwargs)
+    
     cfg = model.cfg
     cfg.general.test_only = resume
     cfg.general.name = name
@@ -60,11 +69,28 @@ def get_resume_adaptive(cfg, model_kwargs):
 
     resume_path = os.path.join(root_dir, cfg.general.resume)
 
+    # Cargar checkpoint para determinar el tipo de modelo guardado
+    ckpt = torch.load(resume_path)
+    
     if cfg.model.type == 'discrete':
-        model = DiscreteDenoisingDiffusion.load_from_checkpoint(resume_path, **model_kwargs)
+        use_persist_homo = cfg.model.get('use_persist_homo', False)
+        if use_persist_homo:
+            from diffusion_model_discrete_persisthomo import DiscreteDenoisingDiffusion
+        else:
+            from diffusion_model_discrete import DiscreteDenoisingDiffusion
+        
+        # Crear modelo y cargar estado filtrando guidance_model
+        model = DiscreteDenoisingDiffusion(cfg=cfg, **model_kwargs)
+        state_dict = ckpt["state_dict"]
+        filtered_state_dict = {k: v for k, v in state_dict.items() if not k.startswith("guidance_model.")}
+        model.load_state_dict(filtered_state_dict, strict=False)
     else:
-        model = LiftedDenoisingDiffusion.load_from_checkpoint(resume_path, **model_kwargs)
-    new_cfg = model.cfg
+        model = LiftedDenoisingDiffusion(cfg=cfg, **model_kwargs)
+        state_dict = ckpt["state_dict"]
+        filtered_state_dict = {k: v for k, v in state_dict.items() if not k.startswith("guidance_model.")}
+        model.load_state_dict(filtered_state_dict, strict=False)
+    
+    new_cfg = ckpt.get("hyper_parameters", {}).get("cfg", cfg) if "hyper_parameters" in ckpt else cfg
 
     for category in cfg:
         for arg in cfg[category]:
@@ -245,32 +271,56 @@ def main(cfg: DictConfig):
         # When testing, previous configuration is fully loaded
         #print("on:", cfg.general.test_only.split('weights')[0])
         cfg, _ = get_resume(cfg, model_kwargs)
-        os.chdir(cfg.general.test_only.split('weights')[0])
-        # os.chdir("outputs")
+        test_dir = cfg.general.test_only
+        # Subir directorios hasta encontrar la carpeta del experimento
+        test_dir = os.path.dirname(test_dir)  # Remover archivo .ckpt
+        test_dir = os.path.dirname(test_dir)  # Remover carpeta del modelo
+        test_dir = os.path.dirname(test_dir)  # Remover carpeta checkpoints
+        os.chdir(test_dir)
     elif cfg.general.resume is not None:
         # When resuming, we can override some parts of previous configuration
         cfg, _ = get_resume_adaptive(cfg, model_kwargs)
-        os.chdir(cfg.general.resume.split('weights')[0])
+        resume_dir = cfg.general.resume
+        # Subir directorios hasta encontrar la carpeta del experimento
+        resume_dir = os.path.dirname(resume_dir)  # Remover archivo .ckpt
+        resume_dir = os.path.dirname(resume_dir)  # Remover carpeta del modelo
+        resume_dir = os.path.dirname(resume_dir)  # Remover carpeta checkpoints
+        os.chdir(resume_dir)
 
     utils.create_folders(cfg)
 
+    # Importar el modelo dinámicamente según la configuración
     if cfg.model.type == 'discrete':
+        # Verificar si se debe usar el modelo Persist Homo
+        use_persist_homo = cfg.model.get('use_persist_homo', False)
+        if use_persist_homo:
+            from diffusion_model_discrete_persisthomo import DiscreteDenoisingDiffusion
+        else:
+            from diffusion_model_discrete import DiscreteDenoisingDiffusion
         model = DiscreteDenoisingDiffusion(cfg=cfg, **model_kwargs)
     else:
         model = LiftedDenoisingDiffusion(cfg=cfg, **model_kwargs)
 
-    if cfg.general.test_only and cfg.general.guidance_path is not None:
+    if cfg.general.guidance_path is not None:
         print(cfg.general.guidance_path)
         if "path" in condi_config.condition_target:
             guidance_model = GraphDistanceModel(hidden_dim=condi_config.HIDDEN_DIM, num_layers=condi_config.NUM_LAYERS, dropout=condi_config.DROPOUT)
         else:
-            guidance_model = GraphStructModel(in_dim=1,hidden_dim=condi_config.HIDDEN_DIM, num_layers=condi_config.NUM_LAYERS,
-                                              dropout=condi_config.DROPOUT, out_dim=len(condi_config.condition_target))
-        guidance_model_path = os.path.join(cfg.general.guidance_path, f"CLASSIFIER_struct_{condi_config.condition_target[0]}_community.pth")
-        guidance_model_path = to_absolute_path(guidance_model_path)
-        guidance_model.load_state_dict(
-            torch.load(guidance_model_path))
-        model.assign_guidance_model(guidance_model)
+            guidance_out_dim = dataset_infos.output_dims['y']
+            guidance_model = GraphStructModel(in_dim=1, hidden_dim=condi_config.HIDDEN_DIM, num_layers=condi_config.NUM_LAYERS,
+                                              dropout=condi_config.DROPOUT, out_dim=guidance_out_dim)
+
+        guidance_path = to_absolute_path(cfg.general.guidance_path)
+        if os.path.isdir(guidance_path):
+            guidance_model_path = os.path.join(guidance_path, f"CLASSIFIER_struct_{condi_config.condition_target[0]}_community.pth")
+        else:
+            guidance_model_path = guidance_path
+
+        if os.path.exists(guidance_model_path):
+            guidance_model.load_state_dict(torch.load(guidance_model_path))
+            model.assign_guidance_model(guidance_model)
+        else:
+            print(f"[WARNING] Guidance model not found: {guidance_model_path}")
     callbacks = []
     if cfg.train.save_model:
         ckpt_dir = os.path.join(os.getcwd(), f"checkpoints/{cfg.general.name}")

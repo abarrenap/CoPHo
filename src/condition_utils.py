@@ -4,12 +4,57 @@ from collections import deque
 from omegaconf import OmegaConf, open_dict
 from torch_geometric.utils import to_dense_adj, to_dense_batch
 import torch
+import torch.nn.functional as F
 import omegaconf
 import wandb
 from typing import List, Dict, Tuple, Optional
 import networkx as nx
 import numpy as np
 import math
+
+from encoder.encoder import load_feature_extractor
+from encoder.load_data import graphs_to_dgl
+
+
+_COND_ENCODER = None
+
+
+def _get_cond_encoder(device: torch.device):
+    global _COND_ENCODER
+    if _COND_ENCODER is None:
+        _COND_ENCODER = load_feature_extractor(device=device)
+    return _COND_ENCODER
+
+
+def _compute_graph_embeddings_from_adj(adj_batch: torch.Tensor,
+                                       node_mask: Optional[torch.Tensor],
+                                       device: torch.device) -> torch.Tensor:
+    graphs = []
+    bs, n, _ = adj_batch.shape
+
+    for i in range(bs):
+        if node_mask is not None:
+            n_i = int(node_mask[i].sum().item())
+        else:
+            n_i = n
+
+        if n_i <= 0:
+            graphs.append({"n": 1, "x": [1.0], "e": [0.0]})
+            continue
+
+        adj = adj_batch[i, :n_i, :n_i].float().cpu().numpy()
+        e_vals = adj.reshape(-1).tolist()
+        x_vals = [1.0] * n_i
+        graphs.append({"n": n_i, "x": x_vals, "e": e_vals})
+
+    encoder_device = torch.device("cpu")
+    g, h = graphs_to_dgl(graphs, device=encoder_device)
+    encoder = _get_cond_encoder(encoder_device)
+
+    with torch.no_grad():
+        embeddings = encoder(g, h).detach()
+
+    return embeddings.to(device)
 
 
 def condition_relaxed_H(noisy_data, target, target_type, device, threshold=0.50):
@@ -51,6 +96,25 @@ def condition_relaxed_H(noisy_data, target, target_type, device, threshold=0.50)
         metric_tensor = torch.tensor(metrics, dtype=torch.float, device=device)  # [bs]
 
         condi_metric, indi_func_res = check_struct_condition(metric_tensor, target.reshape(metric_tensor.shape), threshold)  # bool [bs]
+    elif target_type == "embedding":
+        node_mask = noisy_data.get('node_mask')
+        embeddings = _compute_graph_embeddings_from_adj(A_t, node_mask, device)
+
+        target_tensor = target
+        if target_tensor.dim() == 1:
+            target_tensor = target_tensor.unsqueeze(0)
+        target_tensor = target_tensor.to(device)
+
+        emb_norm = F.normalize(embeddings, p=2, dim=-1)
+        tgt_norm = F.normalize(target_tensor, p=2, dim=-1)
+        cos_sim = (emb_norm * tgt_norm).sum(dim=-1).clamp(-1.0, 1.0)
+        cos_dist = 1.0 - cos_sim
+
+        condi_metric, indi_func_res = check_struct_condition(
+            cos_dist,
+            torch.zeros_like(cos_dist),
+            threshold
+        )
     else:
         raise ValueError(f"Unsupported condition type: {target_type}")
 

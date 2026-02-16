@@ -12,7 +12,8 @@ import torch
 from encoder.encoder import load_feature_extractor
 from encoder.load_data import graphs_to_dgl
 
-enc = load_feature_extractor(device = torch.device('cpu'))
+EMBED_DIM = 70
+enc = load_feature_extractor(device=torch.device('cpu'), output_dim=EMBED_DIM)
 
 class MISDataset(InMemoryDataset):
     """
@@ -118,14 +119,20 @@ class MISDataset(InMemoryDataset):
             data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, num_nodes=num_nodes)
             graph_data = {"n": num_nodes, "x": [1.0] * num_nodes, "e": e_vals}
             g, h = graphs_to_dgl([graph_data], device=enc.device)
-            data.y = enc(g, h).cpu()  # Get graph embedding as label
+            emb = enc(g, h).cpu()  # Get graph embedding as label
+            if emb.dim() == 1:
+                emb = emb.unsqueeze(0)
+            elif emb.dim() > 2:
+                emb = emb.view(emb.size(0), -1)
+            data.y = emb
+            data.cond = emb
             data_list.append(data)
         
         return data_list
 
     def process(self):
         """Process the MIS .txt file and split into train/val/test"""
-        filepath = os.path.join(self.root, 'mis.txt')
+        filepath = os.path.join(self.root, 'raw/mis.txt')
         
         if not os.path.exists(filepath):
             raise FileNotFoundError(f"MIS file not found at {filepath}")
