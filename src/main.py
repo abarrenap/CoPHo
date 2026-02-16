@@ -18,8 +18,7 @@ from src import utils
 from metrics.abstract_metrics import TrainAbstractMetricsDiscrete, TrainAbstractMetrics
 
 from diffusion_model import LiftedDenoisingDiffusion
-from diffusion_model_discrete import DiscreteDenoisingDiffusion as DiscreteDenoisingDiffusionBase
-from diffusion_model_discrete_condition import DiscreteDenoisingDiffusion as DiscreteDenoisingDiffusionCondition
+from diffusion_model_discrete import DiscreteDenoisingDiffusion
 from diffusion.extra_features import DummyExtraFeatures, ExtraFeatures
 from models.GNN_model import GraphDistanceModel, GraphStructModel
 from models import condi_config
@@ -38,12 +37,11 @@ def get_resume(cfg, model_kwargs):
     name = cfg.general.name + '_resume'
     resume = cfg.general.test_only
     resume = to_absolute_path(resume)
-    
-    use_conditional = getattr(cfg.general, 'use_conditional', False) or 'conditional' in cfg.general.name.lower()
-    ModelClass = DiscreteDenoisingDiffusionCondition if use_conditional else DiscreteDenoisingDiffusionBase
-    
+    #print(resume)
+    model = DiscreteDenoisingDiffusion.load_from_checkpoint(str(resume), **model_kwargs)
+    #print(resume)
     if cfg.model.type == 'discrete':
-        model = ModelClass.load_from_checkpoint(resume, **model_kwargs)
+        model = DiscreteDenoisingDiffusion.load_from_checkpoint(resume, **model_kwargs)
     else:
         model = LiftedDenoisingDiffusion.load_from_checkpoint(resume, **model_kwargs)
     cfg = model.cfg
@@ -56,16 +54,14 @@ def get_resume(cfg, model_kwargs):
 def get_resume_adaptive(cfg, model_kwargs):
     """ Resumes a run. It loads previous config but allows to make some changes (used for resuming training)."""
     saved_cfg = cfg.copy()
+    # Fetch path to this file to get base path
     current_path = os.path.dirname(os.path.realpath(__file__))
     root_dir = current_path.split('outputs')[0]
 
     resume_path = os.path.join(root_dir, cfg.general.resume)
 
-    use_conditional = getattr(cfg.general, 'use_conditional', False) or 'conditional' in cfg.general.name.lower()
-    ModelClass = DiscreteDenoisingDiffusionCondition if use_conditional else DiscreteDenoisingDiffusionBase
-
     if cfg.model.type == 'discrete':
-        model = ModelClass.load_from_checkpoint(resume_path, **model_kwargs)
+        model = DiscreteDenoisingDiffusion.load_from_checkpoint(resume_path, **model_kwargs)
     else:
         model = LiftedDenoisingDiffusion.load_from_checkpoint(resume_path, **model_kwargs)
     new_cfg = model.cfg
@@ -258,12 +254,8 @@ def main(cfg: DictConfig):
 
     utils.create_folders(cfg)
 
-    # Select model class based on config
-    use_conditional = getattr(cfg.general, 'use_conditional', False) or 'conditional' in cfg.general.name.lower()
-    
     if cfg.model.type == 'discrete':
-        ModelClass = DiscreteDenoisingDiffusionCondition if use_conditional else DiscreteDenoisingDiffusionBase
-        model = ModelClass(cfg=cfg, **model_kwargs)
+        model = DiscreteDenoisingDiffusion(cfg=cfg, **model_kwargs)
     else:
         model = LiftedDenoisingDiffusion(cfg=cfg, **model_kwargs)
 

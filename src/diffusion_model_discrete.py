@@ -41,6 +41,9 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.Edim_output = output_dims['E']
         self.ydim_output = output_dims['y']
 
+        print(input_dims['y'])
+        print(output_dims['y'])
+
         self.node_dist = nodes_dist
 
         self.dataset_info = dataset_infos
@@ -228,7 +231,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             val_loader = self.trainer.datamodule.val_dataloader()
             for data in val_loader:
                 y_cond = data.y.to(self.device)
-                #print("[DEBUG] val", y_cond.shape)
+                print("[DEBUG] val", y_cond.shape)
                 break
 
             ident = 0
@@ -568,7 +571,11 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         X, E, y = z_T.X, z_T.E, z_T.y
 
         if y_cond is not None:
+            # 确保 y_cond 的 shape 为 (batch_size, y_dim) 或可以广播到这个形状
+            print("[DEBUG] y_cond is not none")
             y = y_cond
+        else:
+            print("[DEBUG] y_cond is none")
 
         assert (E == torch.transpose(E, 1, 2)).all()
         assert number_chain_steps < self.T

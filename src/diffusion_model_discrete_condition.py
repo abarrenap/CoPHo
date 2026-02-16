@@ -124,8 +124,6 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.condition_phase_e = condi_config.condition_phase_e
         self.condition_mode = condi_config.condition_mode
         self.condition_weight = condi_config.condition_weight
-        self.all_condition_phase_s = condi_config.all_condition_phase_s
-        self.all_condition_phase_e = condi_config.all_condition_phase_e
         if self.enable_condition:
             self.name = (f"{self.name}|delta{self.condi_delta}|weight{self.condition_weight}|"
                                 f"multiplier{self.sampling_multiplier}|phase{self.condition_phase_s}-{self.condition_phase_e}|"
@@ -241,7 +239,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             val_loader = self.trainer.datamodule.val_dataloader()
             for data in val_loader:
                 y_cond = data.y.to(self.device)
-                #print("[DEBUG] val", y_cond.shape)
+                print("[DEBUG] val", y_cond.shape)
                 break
 
             ident = 0
@@ -251,11 +249,10 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                 to_save = min(samples_left_to_save, bs, len(y_cond))
                 chains_save = min(chains_left_to_save, bs, len(y_cond))
                 y_cond = y_cond[:to_generate]
-                molecule_list, _, _ = self.sample_batch(batch_id=ident, batch_size=to_generate, num_nodes=None,
+                samples.extend(self.sample_batch(batch_id=ident, batch_size=to_generate, num_nodes=None,
                                                  save_final=to_save,
                                                  keep_chain=chains_save,
-                                                 number_chain_steps=self.number_chain_steps, y_cond=y_cond)
-                samples.extend(molecule_list)
+                                                 number_chain_steps=self.number_chain_steps, y_cond=y_cond))
                 ident += to_generate
 
                 samples_left_to_save -= to_save
@@ -320,9 +317,9 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         test_loader = self.trainer.datamodule.test_dataloader()
         for data in test_loader:
-            cond = data.y.to(self.device)
+            cond = data.cond.to(self.device)
             #print(data.X.shape, data.edge_attr.shape)
-            #print("[DEBUG] cond shape", cond.shape)
+            print("[DEBUG] cond shape", cond.shape)
             break
 
         samples = []
@@ -340,9 +337,9 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             all_chain_X = []  # 用于保存所有 batch 的 chain_X
             all_chain_E = []  # 用于保存所有 batch 的 chain_E
 
-            molecule_list, chain_X, chain_E = self.sample_batch(batch_id=id, batch_size=to_generate, num_nodes=None, save_final=to_save,
+            molecule_list, chain_X, chain_E = self.sample_batch(id, to_generate, num_nodes=None, save_final=to_save,
                                              keep_chain=chains_save, number_chain_steps=self.number_chain_steps,
-                                             y_cond=cond)
+                                             y_cond=None, cond=cond)
             samples.extend(molecule_list)
             all_chain_X.append(chain_X)
             all_chain_E.append(chain_E)
@@ -630,19 +627,17 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         if y_cond is not None:
             # 确保 y_cond 的 shape 为 (batch_size, y_dim) 或可以广播到这个形状
-            #print("[DEBUG] y_cond is not none")
+            print("[DEBUG] y_cond is not none")
             y = y_cond
         else:
-            #print("[DEBUG] y_cond is none")
-            None
-            
+            print("[DEBUG] y_cond is none")
 
         assert (E == torch.transpose(E, 1, 2)).all()
         assert number_chain_steps < self.T
         chain_X_size = torch.Size((number_chain_steps, keep_chain, X.size(1)))
         chain_E_size = torch.Size((number_chain_steps, keep_chain, E.size(1), E.size(2)))
-        rchain_X_size = torch.Size((number_chain_steps, batch_size, X.size(1)))
-        rchain_E_size = torch.Size((number_chain_steps, batch_size, E.size(1), E.size(2)))
+        rchain_X_size = torch.Size((number_chain_steps, 40, X.size(1)))
+        rchain_E_size = torch.Size((number_chain_steps, 40, E.size(1), E.size(2)))
 
         chain_X = torch.zeros(chain_X_size)
         chain_E = torch.zeros(chain_E_size)
@@ -724,7 +719,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             self.visualization_tools.visualize(result_path, molecule_list, save_final)
             self.print("Done.")
 
-        return molecule_list, chain_X, chain_E
+        return molecule_list, rchain_X, rchain_E
 
 
     def cond_fn__(self, noisy_data, node_mask, target=None):
@@ -828,10 +823,11 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             src_idx_flat = src_idx.view(-1)
             tgt_idx_flat = tgt_idx.view(-1)
             dist_flat = dist.view(-1)
-            #print("[DEBUG] SHAPE CHECK")
-            # print(src_idx_flat.shape)
-            # print(tgt_idx_flat.shape)
-            # print(dist_flat.shape)
+            print("[DEBUG] SHAPE CHECK")
+            print(src_idx_flat.shape)
+            print(tgt_idx_flat.shape)
+            print(dist_flat.shape)
+            CCB
 
             # 将 E_v_ind 重复复制后设置 requires_grad=True
             E_v_rep = E_v_ind.repeat_interleave(self.condi_delta, dim=0).clone().detach().float().requires_grad_(True)
