@@ -10,18 +10,25 @@ from src.datasets.abstract_dataset import AbstractDataModule, AbstractDatasetInf
 from models.gin import GIN
 import torch
 from encoder.encoder import load_feature_extractor
+from models import condi_config
 from encoder.load_data import graphs_to_dgl
 
 EMBED_DIM = 70
-enc = load_feature_extractor(device=torch.device('cpu'), output_dim=EMBED_DIM)
+enc = load_feature_extractor(
+    device=torch.device('cpu'),
+    output_dim=EMBED_DIM,
+    use_pretrained=condi_config.gin_use_pretrained,
+    model_path=condi_config.gin_model_path,
+)
 
 class MISDataset(InMemoryDataset):
     """
     Dataset loader for MIS (Maximum Independent Set) graph format (.txt file)
     """
     
-    def __init__(self, root, split='train', transform=None, pre_transform=None, pre_filter=None):
+    def __init__(self, root, split='train', transform=None, pre_transform=None, pre_filter=None, max_nodes=None):
         self.split = split
+        self.max_nodes = max_nodes
         super().__init__(root, transform, pre_transform, pre_filter)
         self.data, self.slices = torch.load(self.processed_paths[0])
 
@@ -32,7 +39,9 @@ class MISDataset(InMemoryDataset):
 
     @property
     def processed_file_names(self):
-        return [f'{self.split}.pt']
+        if self.max_nodes is None:
+            return [f'{self.split}.pt']
+        return [f'{self.split}_max{self.max_nodes}.pt']
 
     def download(self):
         """No download needed - data is already provided"""
@@ -124,6 +133,9 @@ class MISDataset(InMemoryDataset):
                 emb = emb.unsqueeze(0)
             elif emb.dim() > 2:
                 emb = emb.view(emb.size(0), -1)
+            max_abs = emb.abs().max().item() if emb.numel() > 0 else 0.0
+            if max_abs > 0:
+                emb = emb / max_abs
             data.y = emb
             data.cond = emb
             data_list.append(data)
@@ -138,8 +150,14 @@ class MISDataset(InMemoryDataset):
             raise FileNotFoundError(f"MIS file not found at {filepath}")
         
         data_list = self._parse_mis_file(filepath)
-        
-        print(f"Loaded {len(data_list)} graphs from MIS dataset")
+
+        if self.max_nodes is not None:
+            original_count = len(data_list)
+            data_list = [data for data in data_list if data.num_nodes <= self.max_nodes]
+            skipped = original_count - len(data_list)
+            print(f"Loaded {len(data_list)} graphs from MIS dataset (skipped {skipped} > max_nodes={self.max_nodes})")
+        else:
+            print(f"Loaded {len(data_list)} graphs from MIS dataset")
         
         if len(data_list) == 0:
             raise ValueError(f"No graphs found in {filepath}")
@@ -177,10 +195,11 @@ class MISDataset(InMemoryDataset):
 class MISDataModule(AbstractDataModule):
     def __init__(self, cfg):
         self.cfg = cfg
+        max_nodes = getattr(cfg.dataset, 'max_nodes', None)
         self.datasets = {
-            'train': MISDataset(root=cfg.dataset.datadir, split='train'),
-            'val': MISDataset(root=cfg.dataset.datadir, split='val'),
-            'test': MISDataset(root=cfg.dataset.datadir, split='test'),
+            'train': MISDataset(root=cfg.dataset.datadir, split='train', max_nodes=max_nodes),
+            'val': MISDataset(root=cfg.dataset.datadir, split='val', max_nodes=max_nodes),
+            'test': MISDataset(root=cfg.dataset.datadir, split='test', max_nodes=max_nodes),
         }
         super().__init__(cfg, self.datasets)
         self.infos = MISDatasetInfos(self.datasets)

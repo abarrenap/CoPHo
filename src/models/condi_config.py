@@ -16,6 +16,10 @@ condi_delta = 1
 condition_weight = 1
 sampling_multiplier = 2
 
+# GIN embedding settings
+gin_use_pretrained = True
+gin_model_path = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/random_gin.pt"
+
 homo_condition_phase_s = 0.6
 homo_condition_phase_e = 1.0
 

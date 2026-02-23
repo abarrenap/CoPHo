@@ -24,7 +24,11 @@ def load_feature_extractor(
         assert model_path is not None, 'Please pass model_path if use_pretrained=True'
         print('loaded', model_path)
         saved_model = torch.load(model_path)
-        model.load_state_dict(saved_model['model_state_dict'])
+        state_dict = saved_model['model_state_dict']
+        
+        # Filter out linears_prediction keys (output layer) to allow any output_dim
+        state_dict = {k: v for k, v in state_dict.items() if not k.startswith('linears_prediction')}
+        model.load_state_dict(state_dict, strict=False)
 
     model.eval()
 

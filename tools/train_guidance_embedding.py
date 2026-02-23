@@ -90,6 +90,8 @@ def main():
             y = get_batch_y(batch, args.normalize_emb)
 
             pred = model(adj, node_mask)
+            if args.normalize_emb:
+                pred = F.normalize(pred, p=2, dim=-1)
             loss = F.mse_loss(pred, y)
 
             optimizer.zero_grad()
@@ -109,6 +111,8 @@ def main():
                 adj = dense.E[..., 1]
                 y = get_batch_y(batch, args.normalize_emb)
                 pred = model(adj, node_mask)
+                if args.normalize_emb:
+                    pred = F.normalize(pred, p=2, dim=-1)
                 val_running += F.mse_loss(pred, y).item()
             val_loss = val_running / max(len(val_loader), 1)
 
