@@ -524,6 +524,15 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
     def apply_noise(self, X, E, y, node_mask):
         """ Sample noise and apply it to the data. """
 
+        # Ensure y has a batch dimension: (bs, ydim)
+        if y.dim() == 0:
+            y = y.view(1, 1)
+        elif y.dim() == 1:
+            if y.shape[0] == X.size(0):
+                y = y.unsqueeze(1)
+            else:
+                y = y.unsqueeze(0)
+
         # Sample a timestep t.
         # When evaluating, the loss for t=0 is computed separately
         lowest_t = 0 if self.training else 1

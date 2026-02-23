@@ -129,10 +129,10 @@ class MISDataset(InMemoryDataset):
             graph_data = {"n": num_nodes, "x": [1.0] * num_nodes, "e": e_vals}
             g, h = graphs_to_dgl([graph_data], device=enc.device)
             emb = enc(g, h).cpu()  # Get graph embedding as label
-            if emb.dim() == 1:
-                emb = emb.unsqueeze(0)
-            elif emb.dim() > 2:
+            if emb.dim() > 2:
                 emb = emb.view(emb.size(0), -1)
+            if emb.dim() == 2 and emb.size(0) == 1:
+                emb = emb.squeeze(0)
             max_abs = emb.abs().max().item() if emb.numel() > 0 else 0.0
             if max_abs > 0:
                 emb = emb / max_abs
