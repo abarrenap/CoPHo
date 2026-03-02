@@ -321,13 +321,13 @@ def generate_conditioned_graphs(checkpoint_path: str,
 
 
 if __name__ == "__main__":
-    checkpoint = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-02-23/12-34-52-mis_homo_3/checkpoints/mis_homo_3/last-v1.ckpt"
-    graphs = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/mis/raw/dimacs.txt"
+    checkpoint = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-02-24/09-31-21-mis_dimacs_300/checkpoints/mis_dimacs_300/epoch=9.ckpt"
+    graphs = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/dim/raw/mis.txt"
 
-    output = "../generated/dimacs.txt"
+    output = "../generated/dimacs_9.txt"
     guidance = '/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_community.pth'
     device = "cpu"
-    per_embedding = 1
+    per_embedding = 2
 
     generate_conditioned_graphs(
         checkpoint_path=checkpoint,

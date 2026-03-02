@@ -143,10 +143,19 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.guidance_model = gmodel
         print("Successfully assigned guidance model")
 
+    def safe_print(self, *args, **kwargs):
+        """Print function that works both with and without a Trainer."""
+        try:
+            if hasattr(self, 'trainer') and self.trainer is not None:
+                self.print(*args, **kwargs)
+            else:
+                print(*args, **kwargs)
+        except (RuntimeError, AttributeError):
+            print(*args, **kwargs)
 
     def training_step(self, data, i):
         if data.edge_index.numel() == 0:
-            self.print("Found a batch with no edges. Skipping.")
+            self.safe_print("Found a batch with no edges. Skipping.")
             return
         # 正常的前向传播
         dense_data, node_mask = utils.to_dense(data.x, data.edge_index, data.edge_attr, data.batch)
@@ -173,24 +182,24 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
     def on_fit_start(self) -> None:
         self.train_iterations = len(self.trainer.datamodule.train_dataloader())
-        self.print("Size of the input features", self.Xdim, self.Edim, self.ydim)
+        self.safe_print("Size of the input features", self.Xdim, self.Edim, self.ydim)
         if self.local_rank == 0:
             utils.setup_wandb(self.cfg)
 
     def on_train_epoch_start(self) -> None:
-        self.print("Starting train epoch...")
+        self.safe_print("Starting train epoch...")
         self.start_epoch_time = time.time()
         self.train_loss.reset()
         self.train_metrics.reset()
 
     def on_train_epoch_end(self) -> None:
         to_log = self.train_loss.log_epoch_metrics()
-        self.print(f"Epoch {self.current_epoch}: X_CE: {to_log['train_epoch/x_CE'] :.3f}"
+        self.safe_print(f"Epoch {self.current_epoch}: X_CE: {to_log['train_epoch/x_CE'] :.3f}"
                    f" -- E_CE: {to_log['train_epoch/E_CE'] :.3f} --"
                    f" y_CE: {to_log['train_epoch/y_CE'] :.3f}"
                    f" -- {time.time() - self.start_epoch_time:.1f}s ")
         epoch_at_metrics, epoch_bond_metrics = self.train_metrics.log_epoch_metrics()
-        self.print(f"Epoch {self.current_epoch}: {epoch_at_metrics} -- {epoch_bond_metrics}")
+        self.safe_print(f"Epoch {self.current_epoch}: {epoch_at_metrics} -- {epoch_bond_metrics}")
         if torch.cuda.is_available():
             print(torch.cuda.memory_summary())
         else:
@@ -223,7 +232,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                        "val/X_logp": metrics[3],
                        "val/E_logp": metrics[4]}, commit=False)
 
-        self.print(f"Epoch {self.current_epoch}: Val NLL {metrics[0] :.2f} -- Val Atom type KL {metrics[1] :.2f} -- ",
+        self.safe_print(f"Epoch {self.current_epoch}: Val NLL {metrics[0] :.2f} -- Val Atom type KL {metrics[1] :.2f} -- ",
                    f"Val Edge type KL: {metrics[2] :.2f}")
 
         # Log val nll with default Lightning logger, so it can be monitored by checkpoint callback
@@ -232,7 +241,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         if val_nll < self.best_val_nll:
             self.best_val_nll = val_nll
-        self.print('Val loss: %.4f \t Best val loss:  %.4f\n' % (val_nll, self.best_val_nll))
+        self.safe_print('Val loss: %.4f \t Best val loss:  %.4f\n' % (val_nll, self.best_val_nll))
 
         self.val_counter += 1
         if self.val_counter % self.cfg.general.sample_every_val == 0:
@@ -267,14 +276,14 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                 samples_left_to_save -= to_save
                 samples_left_to_generate -= to_generate
                 chains_left_to_save -= chains_save
-            self.print("Computing sampling metrics...")
+            self.safe_print("Computing sampling metrics...")
             self.sampling_metrics.forward(samples, self.name, self.current_epoch, val_counter=-1, test=False,
                                           local_rank=self.local_rank)
-            self.print(f'Done. Sampling took {time.time() - start:.2f} seconds\n')
+            self.safe_print(f'Done. Sampling took {time.time() - start:.2f} seconds\n')
             print("Validation epoch end ends...")
 
     def on_test_epoch_start(self) -> None:
-        self.print("Starting test...")
+        self.safe_print("Starting test...")
         #self.test_nll.reset()
         #self.test_X_kl.reset()
         #self.test_E_kl.reset()
@@ -334,7 +343,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         samples = []
         id = 0
         while samples_left_to_generate > 0:
-            self.print(f'Samples left to generate: {samples_left_to_generate}/'
+            self.safe_print(f'Samples left to generate: {samples_left_to_generate}/'
                        f'{self.cfg.general.final_model_samples_to_generate}', end='', flush=True)
 
             bs = self.cfg.train.batch_size
@@ -356,7 +365,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             samples_left_to_save -= to_save
             samples_left_to_generate -= to_generate
             chains_left_to_save -= chains_save
-        self.print("Saving the generated graphs")
+        self.safe_print("Saving the generated graphs")
         for i in range(1, 50):
             filename = (f"generated_samples|conditions-{self.condition_target[0]}|"
                         f"phase{self.condition_phase_s}-{self.condition_phase_e}|"
@@ -383,7 +392,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                         f.write(f"{float(bond):.6f} ")
                     f.write("\n")
                 f.write("\n")
-        self.print("Generated graphs Saved. Computing sampling metrics...")
+        self.safe_print("Generated graphs Saved. Computing sampling metrics...")
 
         # 设置一个新的文件名，用于保存中间链信息
         for i in range(1, 50):
@@ -413,8 +422,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         self.sampling_metrics(samples, self.name, self.current_epoch, self.val_counter, test=True,
                                local_rank=self.local_rank)
-        # self.print(f"Write {chain_counts} noise graphs to file.")
-        self.print("Done testing.")
+        # self.safe_print(f"Write {chain_counts} noise graphs to file.")
+        self.safe_print("Done testing.")
 
     def kl_prior(self, X, E, node_mask):
         """Computes the KL between q(z1 | x) and the prior p(z1) = Normal(0, 1).
@@ -748,7 +757,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         # Visualize chains
         if self.visualization_tools is not None:
-            self.print('Visualizing chains...')
+            self.safe_print('Visualizing chains...')
             current_path = os.getcwd()
             num_molecules = chain_X.size(1)  # number of molecules
             for i in range(num_molecules):
@@ -760,15 +769,15 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                     _ = self.visualization_tools.visualize_chain(result_path,
                                                                  chain_X[:, i, :].numpy(),
                                                                  chain_E[:, i, :].numpy())
-                self.print('\r{}/{} complete'.format(i + 1, num_molecules), end='', flush=True)
-            self.print('\nVisualizing molecules...')
+                self.safe_print('\r{}/{} complete'.format(i + 1, num_molecules), end='', flush=True)
+            self.safe_print('\nVisualizing molecules...')
 
             # Visualize the final molecules
             current_path = os.getcwd()
             result_path = os.path.join(current_path,
                                        f'graphs/{self.name}/epoch{self.current_epoch}_b{batch_id}/')
             self.visualization_tools.visualize(result_path, molecule_list, save_final)
-            self.print("Done.")
+            self.safe_print("Done.")
 
         return molecule_list, rchain_X, rchain_E
 
