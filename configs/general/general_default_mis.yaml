@@ -10,7 +10,7 @@ resume: null            # If resume, path to ckpt file from outputs directory in
 test_only: null  # Use absolute path
 # 训练完自动会测一遍
 
-guidance_path: /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_community.pth
+guidance_path: /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_DIMACS.pth
 
 # 这里的参数在训练完后紧接着执行的测试中使用
 check_val_every_n_epochs: 5

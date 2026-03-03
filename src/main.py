@@ -2,6 +2,7 @@ import graph_tool as gt
 import os
 import pathlib
 import warnings
+import logging
 # os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 import torch
@@ -362,6 +363,31 @@ def main(cfg: DictConfig):
     if not cfg.general.test_only:
         trainer.fit(model, datamodule=datamodule, ckpt_path=cfg.general.resume)
         if cfg.general.name not in ['debug', 'test']:
+            # Cargar el mejor modelo según la pérdida antes de hacer el test final
+            if cfg.train.save_model and checkpoint_callback.best_model_path:
+                print(f"\n[INFO] Cargando el mejor modelo para generación final: {checkpoint_callback.best_model_path}")
+                print(f"[INFO] Mejor val/epoch_NLL: {checkpoint_callback.best_model_score}")
+                
+                # Extraer el epoch del nombre del archivo del checkpoint
+                checkpoint_filename = os.path.basename(checkpoint_callback.best_model_path)
+                # El formato es 'epoch=X.ckpt' o solo 'X.ckpt'
+                if 'epoch=' in checkpoint_filename:
+                    best_epoch = checkpoint_filename.split('epoch=')[1].split('.ckpt')[0].split('-')[0]
+                else:
+                    best_epoch = checkpoint_filename.split('.ckpt')[0]
+                
+                # Escribir en main.log usando el logger de Python
+                log = logging.getLogger(__name__)
+                log.info(f"Mejor modelo encontrado en epoch {best_epoch} con val/epoch_NLL: {checkpoint_callback.best_model_score}")
+                print(f"[INFO] Mejor epoch: {best_epoch}")
+                
+                # Cargar el mejor checkpoint
+                ckpt = torch.load(checkpoint_callback.best_model_path)
+                state_dict = ckpt["state_dict"]
+                # Filtrar parámetros del guidance model si existen
+                filtered_state_dict = {k: v for k, v in state_dict.items() if not k.startswith("guidance_model.")}
+                model.load_state_dict(filtered_state_dict, strict=False)
+            
             trainer.test(model, datamodule=datamodule)
     else:
         # Start by evaluating test_only_path
