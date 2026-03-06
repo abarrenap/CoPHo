@@ -1,6 +1,6 @@
 # Training settings
 n_epochs: 100
-batch_size: 2
+batch_size: 32
 lr: 0.00005
 clip_grad: 0.5          # float, null to disable
 save_model: True

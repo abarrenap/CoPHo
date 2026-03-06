@@ -119,6 +119,9 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         self.guidance_model = guidance_model
         self.enable_condition = condi_config.enable_condition
+        if self.enable_condition and self.guidance_model is None:
+            self.safe_print("[WARNING] Conditioning is enabled but no guidance model was loaded. Disabling conditioning.")
+            self.enable_condition = False
         self.condi_delta = condi_config.condi_delta
         self.sampling_multiplier = condi_config.sampling_multiplier
         self.condition_phase_s = condi_config.condition_phase_s
@@ -141,6 +144,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         gmodel.eval()
         gmodel.to(self.device)
         self.guidance_model = gmodel
+        if condi_config.enable_condition:
+            self.enable_condition = True
         print("Successfully assigned guidance model")
 
     def safe_print(self, *args, **kwargs):
@@ -379,12 +384,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                 f.write(f"N={item[0].shape[0]}\n")
                 atoms = item[0].tolist()
                 f.write("X:\n")
-                for at in atoms:
-                    if isinstance(at, list):
-                        for val in at:
-                            f.write(f"{int(val)} ")
-                    else:
-                        f.write(f"{int(at)} ")
+                for _ in atoms:
+                    f.write(f"1 ")
                 f.write("\n")
                 f.write("E:\n")
                 for bond_list in item[1]:
@@ -783,9 +784,12 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
 
     def cond_fn(self, noisy_data, node_mask, target=None, target_type="path", cid=999):
+        E = noisy_data['E_t']
+        if self.guidance_model is None:
+            return torch.zeros_like(E[..., 1])
+
         with torch.enable_grad():
             # 获取 E_t，并取出第二个通道作为独立变量
-            E = noisy_data['E_t']
             E_v_ind = E[..., 1]
             bs, n, _, _ = E.shape
 

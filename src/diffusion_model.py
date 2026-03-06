@@ -305,12 +305,8 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                 f.write(f"N={item[0].shape[0]}\n")
                 atoms = item[0].tolist()
                 f.write("X:\n")
-                for at in atoms:
-                    if isinstance(at, list):
-                        for val in at:
-                            f.write(f"{int(val)} ")
-                    else:
-                        f.write(f"{int(at)} ")
+                for _ in atoms:
+                    f.write(f"1 ")
                 f.write("\n")
                 f.write("E:\n")
                 for bond_list in item[1]:

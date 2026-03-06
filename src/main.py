@@ -365,9 +365,9 @@ def main(cfg: DictConfig):
         if cfg.general.name not in ['debug', 'test']:
             # Cargar el mejor modelo según la pérdida antes de hacer el test final
             if cfg.train.save_model and checkpoint_callback.best_model_path:
-                print(f"\n[INFO] Cargando el mejor modelo para generación final: {checkpoint_callback.best_model_path}")
-                print(f"[INFO] Mejor val/epoch_NLL: {checkpoint_callback.best_model_score}")
-                
+                print(f"\n[INFO] Loading best model: {checkpoint_callback.best_model_path}")
+                print(f"[INFO] Best val/epoch_NLL: {checkpoint_callback.best_model_score}")
+
                 # Extraer el epoch del nombre del archivo del checkpoint
                 checkpoint_filename = os.path.basename(checkpoint_callback.best_model_path)
                 # El formato es 'epoch=X.ckpt' o solo 'X.ckpt'
@@ -378,8 +378,8 @@ def main(cfg: DictConfig):
                 
                 # Escribir en main.log usando el logger de Python
                 log = logging.getLogger(__name__)
-                log.info(f"Mejor modelo encontrado en epoch {best_epoch} con val/epoch_NLL: {checkpoint_callback.best_model_score}")
-                print(f"[INFO] Mejor epoch: {best_epoch}")
+                log.info(f"Best model found at epoch {best_epoch} with val/epoch_NLL: {checkpoint_callback.best_model_score}")
+                print(f"[INFO] Best epoch: {best_epoch}")
                 
                 # Cargar el mejor checkpoint
                 ckpt = torch.load(checkpoint_callback.best_model_path)

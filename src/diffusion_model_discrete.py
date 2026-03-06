@@ -217,7 +217,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         if val_nll < self.best_val_nll:
             self.best_val_nll = val_nll
-        self.print('Val loss: %.4f \t Best val loss:  %.4f\n' % (val_nll, self.best_val_nll))
+            val_nll_normalized = val_nll / self.T
+            self.print('Val loss: %.4f (normalized: %.4f) \t Best val loss: %.4f\n' % (val_nll, val_nll_normalized, self.best_val_nll))
 
         self.val_counter += 1
         if self.val_counter % self.cfg.general.sample_every_val == 0:
@@ -334,12 +335,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                 f.write(f"N={item[0].shape[0]}\n")
                 atoms = item[0].tolist()
                 f.write("X:\n")
-                for at in atoms:
-                    if isinstance(at, list):
-                        for val in at:
-                            f.write(f"{int(val)} ")
-                    else:
-                        f.write(f"{int(at)} ")
+                for _ in atoms:
+                    f.write(f"1 ")
                 f.write("\n")
                 f.write("E:\n")
                 for bond_list in item[1]:
