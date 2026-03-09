@@ -13,11 +13,11 @@ test_only: null  # Use absolute path
 guidance_path: /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding.pth
 
 # 这里的参数在训练完后紧接着执行的测试中使用
-check_val_every_n_epochs: 5
-sample_every_val: 4
+check_val_every_n_epochs: 2
+sample_every_val: 5
 val_check_interval: null
 # 验证集参数
-samples_to_generate:  4       # We advise to set it to 2 x batch_size maximum
+samples_to_generate:  32       # We advise to set it to 2 x batch_size maximum
 samples_to_save: 4
 chains_to_save: 0
 log_every_steps: 50

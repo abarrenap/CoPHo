@@ -1,0 +1,13 @@
+{"time":"2026-03-07T12:20:59.258285+01:00","level":"INFO","msg":"stream: starting","core version":"0.25.0"}
+{"time":"2026-03-07T12:20:59.454452+01:00","level":"INFO","msg":"stream: created new stream","id":"60r9yzwt"}
+{"time":"2026-03-07T12:20:59.45496+01:00","level":"INFO","msg":"handler: started","stream_id":"60r9yzwt"}
+{"time":"2026-03-07T12:20:59.455288+01:00","level":"INFO","msg":"stream: started","id":"60r9yzwt"}
+{"time":"2026-03-07T12:20:59.455539+01:00","level":"INFO","msg":"sender: started","stream_id":"60r9yzwt"}
+{"time":"2026-03-07T12:20:59.455708+01:00","level":"INFO","msg":"writer: started","stream_id":"60r9yzwt"}
+{"time":"2026-03-07T12:44:15.302056+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/aimarbarrena-upv-ehu/graph_ddm_mis/60r9yzwt/file_stream\": read tcp 192.168.1.52:64249->35.186.228.49:443: read: can't assign requested address"}
+{"time":"2026-03-07T13:24:31.420081+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-03-07T13:24:31.713478+01:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-03-07T13:24:31.732698+01:00","level":"INFO","msg":"stream: closing","id":"60r9yzwt"}
+{"time":"2026-03-07T13:24:31.733152+01:00","level":"INFO","msg":"handler: closed","stream_id":"60r9yzwt"}
+{"time":"2026-03-07T13:24:31.733728+01:00","level":"INFO","msg":"sender: closed","stream_id":"60r9yzwt"}
+{"time":"2026-03-07T13:24:31.733757+01:00","level":"INFO","msg":"stream: closed","id":"60r9yzwt"}

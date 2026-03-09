@@ -103,7 +103,7 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                               true_epsX=noisy_data['epsX'],
                               true_epsE=noisy_data['epsE'],
                               true_y=noisy_data['epsy'],
-                              log=i % self.log_every_steps == 0)
+                              log=i % self.log_every_steps == 0, epoch=self.current_epoch)
 
         self.train_metrics(masked_pred_epsX=pred.X,
                            masked_pred_epsE=pred.E,
@@ -129,7 +129,7 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
         self.train_metrics.reset()
 
     def on_train_epoch_end(self) -> None:
-        to_log = self.train_loss.log_epoch_metrics()
+        to_log = self.train_loss.log_epoch_metrics(epoch=self.current_epoch)
         self.print(f"Epoch {self.current_epoch}: X_mse: {to_log['train_epoch/epoch_X_mse'] :.3f}"
                       f" -- E mse: {to_log['train_epoch/epoch_E_mse'] :.3f} --"
                       f" y_mse: {to_log['train_epoch/epoch_y_mse'] :.3f}"
@@ -172,7 +172,8 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                        "val/y_mse": metrics[3],
                        "val/X_logp": metrics[4],
                        "val/E_logp": metrics[5],
-                       "val/y_logp": metrics[6]}, commit=False)
+                       "val/y_logp": metrics[6],
+                       "epoch": self.current_epoch}, commit=False)
 
         print(f"Epoch {self.current_epoch}: Val NLL {metrics[0] :.2f} -- Val Atom type MSE {metrics[1] :.2f} -- ",
               f"Val Edge type MSE: {metrics[2] :.2f} -- Val Global feat. MSE {metrics[3] :.2f}",
@@ -183,7 +184,9 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
         val_nll = metrics[0]
         self.log("val/epoch_NLL", val_nll, sync_dist=True)
         if wandb.run:
-            wandb.log(self.log_info(), commit=False)
+            val_info = self.log_info()
+            val_info["epoch"] = self.current_epoch
+            wandb.log(val_info, commit=False)
 
         if val_nll < self.best_val_nll:
             self.best_val_nll = val_nll
@@ -254,7 +257,8 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
          "test/y_mse": metrics[3],
          "test/X_logp": metrics[4],
          "test/E_logp": metrics[5],
-         "test/y_logp": metrics[6]}
+         "test/y_logp": metrics[6],
+         "epoch": self.current_epoch}
         if wandb.run:
             wandb.log(log_dict, commit=False)
 
@@ -265,8 +269,10 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
 
         test_nll = metrics[0]
         if wandb.run:
-            wandb.log({"test/epoch_NLL": test_nll}, commit=False)
-            wandb.log(self.log_info(), commit=False)
+            wandb.log({"test/epoch_NLL": test_nll, "epoch": self.current_epoch}, commit=False)
+            test_info = self.log_info()
+            test_info["epoch"] = self.current_epoch
+            wandb.log(test_info, commit=False)
 
         print(f'Test loss: {test_nll :.4f}')
 
@@ -556,7 +562,8 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                    "Estimator loss terms": loss_all_t.mean(),
                    "Loss term 0": loss_term_0,
                    "log_pn": log_pN.mean(),
-                   'test_nll' if test else 'val_nll': nll},
+                   'test_nll' if test else 'val_nll': nll,
+                   "epoch": self.current_epoch},
                   commit=False)
         return nll
 

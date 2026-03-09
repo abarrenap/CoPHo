@@ -171,11 +171,11 @@ def main(cfg: DictConfig):
 
     elif dataset_config["name"] == 'mis':
         from datasets.mis_dataset import MISDataModule, MISDatasetInfos
-        from analysis.spectre_utils import SBMSamplingMetrics
+        from analysis.spectre_utils import MISSamplingMetrics
         from analysis.visualization import NonMolecularVisualization
 
         datamodule = MISDataModule(cfg)
-        sampling_metrics = SBMSamplingMetrics(datamodule)
+        sampling_metrics = MISSamplingMetrics(datamodule)
         dataset_infos = MISDatasetInfos(datamodule.datasets)
         train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == 'discrete' else TrainAbstractMetrics()
         visualization_tools = NonMolecularVisualization()
@@ -326,13 +326,14 @@ def main(cfg: DictConfig):
     if cfg.train.save_model:
         ckpt_dir = os.path.join(os.getcwd(), f"checkpoints/{cfg.general.name}")
         os.makedirs(ckpt_dir, exist_ok=True)
+        monitor_metric = 'val/epoch_CE' if cfg.model.type == 'discrete' else 'val/epoch_NLL'
         checkpoint_callback = ModelCheckpoint(dirpath=ckpt_dir,
-                                              filename='{epoch}',
-                                              monitor='val/epoch_NLL',
-                                              save_top_k=5,
+                                              filename='epoch_{epoch:03d}',
+                                              monitor=monitor_metric,
+                                              save_top_k=-1,
                                               mode='min',
                                               every_n_epochs=1)
-        last_ckpt_save = ModelCheckpoint(dirpath=ckpt_dir, filename='last', every_n_epochs=1)
+        last_ckpt_save = ModelCheckpoint(dirpath=ckpt_dir, filename='last_epoch', every_n_epochs=1)
         callbacks.append(last_ckpt_save)
         callbacks.append(checkpoint_callback)
 
@@ -366,7 +367,7 @@ def main(cfg: DictConfig):
             # Cargar el mejor modelo según la pérdida antes de hacer el test final
             if cfg.train.save_model and checkpoint_callback.best_model_path:
                 print(f"\n[INFO] Loading best model: {checkpoint_callback.best_model_path}")
-                print(f"[INFO] Best val/epoch_NLL: {checkpoint_callback.best_model_score}")
+                print(f"[INFO] Best {monitor_metric}: {checkpoint_callback.best_model_score}")
 
                 # Extraer el epoch del nombre del archivo del checkpoint
                 checkpoint_filename = os.path.basename(checkpoint_callback.best_model_path)
@@ -378,7 +379,7 @@ def main(cfg: DictConfig):
                 
                 # Escribir en main.log usando el logger de Python
                 log = logging.getLogger(__name__)
-                log.info(f"Best model found at epoch {best_epoch} with val/epoch_NLL: {checkpoint_callback.best_model_score}")
+                log.info(f"Best model found at epoch {best_epoch} with {monitor_metric}: {checkpoint_callback.best_model_score}")
                 print(f"[INFO] Best epoch: {best_epoch}")
                 
                 # Cargar el mejor checkpoint

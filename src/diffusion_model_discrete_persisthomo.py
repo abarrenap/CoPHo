@@ -11,7 +11,7 @@ from diffusion.noise_schedule import DiscreteUniformTransition, PredefinedNoiseS
     MarginalUniformTransition
 from src.diffusion import diffusion_utils
 from metrics.train_metrics import TrainLossDiscrete
-from metrics.abstract_metrics import SumExceptBatchMetric, SumExceptBatchKL, NLL
+from metrics.abstract_metrics import SumExceptBatchMetric, SumExceptBatchKL, NLL, CrossEntropyMetric
 from src import utils
 from src import condition_utils
 
@@ -63,6 +63,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.val_E_kl = SumExceptBatchKL()
         self.val_X_logp = SumExceptBatchMetric()
         self.val_E_logp = SumExceptBatchMetric()
+        self.val_node_ce = CrossEntropyMetric()
+        self.val_edge_ce = CrossEntropyMetric()
 
         self.test_nll = NLL()
         self.test_X_kl = SumExceptBatchKL()
@@ -115,6 +117,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.log_every_steps = cfg.general.log_every_steps
         self.number_chain_steps = cfg.general.number_chain_steps
         self.best_val_nll = 1e8
+        self.best_val_ce = 1e8
         self.val_counter = 0
 
         self.guidance_model = guidance_model
@@ -171,7 +174,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         pred = self.forward(noisy_data, extra_data, node_mask)
         loss = self.train_loss(masked_pred_X=pred.X, masked_pred_E=pred.E, pred_y=pred.y,
                                true_X=X, true_E=E, true_y=data.y,
-                               log=i % self.log_every_steps == 0)
+                               log=i % self.log_every_steps == 0, epoch=self.current_epoch)
 
         self.train_metrics(masked_pred_X=pred.X, masked_pred_E=pred.E, true_X=X, true_E=E,
                            log=i % self.log_every_steps == 0)
@@ -198,7 +201,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.train_metrics.reset()
 
     def on_train_epoch_end(self) -> None:
-        to_log = self.train_loss.log_epoch_metrics()
+        to_log = self.train_loss.log_epoch_metrics(epoch=self.current_epoch)
         self.safe_print(f"Epoch {self.current_epoch}: X_CE: {to_log['train_epoch/x_CE'] :.3f}"
                    f" -- E_CE: {to_log['train_epoch/E_CE'] :.3f} --"
                    f" y_CE: {to_log['train_epoch/y_CE'] :.3f}"
@@ -216,7 +219,27 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.val_E_kl.reset()
         self.val_X_logp.reset()
         self.val_E_logp.reset()
+        self.val_node_ce.reset()
+        self.val_edge_ce.reset()
         self.sampling_metrics.reset()
+
+    def compute_val_ce(self, pred_X, pred_E, true_X, true_E):
+        true_X = torch.reshape(true_X, (-1, true_X.size(-1)))
+        true_E = torch.reshape(true_E, (-1, true_E.size(-1)))
+        pred_X = torch.reshape(pred_X, (-1, pred_X.size(-1)))
+        pred_E = torch.reshape(pred_E, (-1, pred_E.size(-1)))
+
+        mask_X = (true_X != 0.).any(dim=-1)
+        mask_E = (true_E != 0.).any(dim=-1)
+
+        flat_true_X = true_X[mask_X, :]
+        flat_pred_X = pred_X[mask_X, :]
+        flat_true_E = true_E[mask_E, :]
+        flat_pred_E = pred_E[mask_E, :]
+
+        loss_X = self.val_node_ce(flat_pred_X, flat_true_X) if flat_true_X.numel() > 0 else torch.tensor(0.0, device=pred_X.device)
+        loss_E = self.val_edge_ce(flat_pred_E, flat_true_E) if flat_true_E.numel() > 0 else torch.tensor(0.0, device=pred_E.device)
+        return loss_X + self.cfg.model.lambda_train[0] * loss_E
 
     def validation_step(self, data, i):
         dense_data, node_mask = utils.to_dense(data.x, data.edge_index, data.edge_attr, data.batch)
@@ -224,8 +247,9 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         noisy_data = self.apply_noise(dense_data.X, dense_data.E, data.y, node_mask)
         extra_data = self.compute_extra_data(noisy_data)
         pred = self.forward(noisy_data, extra_data, node_mask)
+        val_ce = self.compute_val_ce(pred.X, pred.E, dense_data.X, dense_data.E)
         nll = self.compute_val_loss(pred, noisy_data, dense_data.X, dense_data.E, data.y, node_mask, test=False)
-        return {'loss': nll}
+        return {'loss': val_ce, 'nll': nll}
 
     def on_validation_epoch_end(self) -> None:
         metrics = [self.val_nll.compute(), self.val_X_kl.compute() * self.T, self.val_E_kl.compute() * self.T,
@@ -235,10 +259,22 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                        "val/X_kl": metrics[1],
                        "val/E_kl": metrics[2],
                        "val/X_logp": metrics[3],
-                       "val/E_logp": metrics[4]}, commit=False)
+                       "val/E_logp": metrics[4],
+                       "epoch": self.current_epoch}, commit=False)
+
+        val_x_ce = self.val_node_ce.compute() if self.val_node_ce.total_samples > 0 else torch.tensor(0.0, device=self.device)
+        val_e_ce = self.val_edge_ce.compute() if self.val_edge_ce.total_samples > 0 else torch.tensor(0.0, device=self.device)
+        val_ce = val_x_ce + self.cfg.model.lambda_train[0] * val_e_ce
+        self.log("val/epoch_CE", val_ce, sync_dist=True)
+        if wandb.run:
+            wandb.log({"val/epoch_CE": val_ce,
+                       "val/X_CE": val_x_ce,
+                       "val/E_CE": val_e_ce,
+                       "epoch": self.current_epoch}, commit=False)
 
         self.safe_print(f"Epoch {self.current_epoch}: Val NLL {metrics[0] :.2f} -- Val Atom type KL {metrics[1] :.2f} -- ",
                    f"Val Edge type KL: {metrics[2] :.2f}")
+        self.safe_print(f"Epoch {self.current_epoch}: Val CE {val_ce :.4f} -- Val X CE {val_x_ce :.4f} -- Val E CE {val_e_ce :.4f}")
 
         # Log val nll with default Lightning logger, so it can be monitored by checkpoint callback
         val_nll = metrics[0]
@@ -246,7 +282,9 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         if val_nll < self.best_val_nll:
             self.best_val_nll = val_nll
-        self.safe_print('Val loss: %.4f \t Best val loss:  %.4f\n' % (val_nll, self.best_val_nll))
+        if val_ce < self.best_val_ce:
+            self.best_val_ce = val_ce
+        self.safe_print('Val loss (CE): %.4f \t Best val loss (CE):  %.4f\n' % (val_ce, self.best_val_ce))
 
         self.val_counter += 1
         if self.val_counter % self.cfg.general.sample_every_val == 0:
@@ -616,7 +654,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                        "Estimator loss terms": loss_all_t.mean(),
                        "log_pn": log_pN.mean(),
                        "loss_term_0": loss_term_0,
-                       'batch_test_nll' if test else 'val_nll': nll}, commit=False)
+                       'batch_test_nll' if test else 'val_nll': nll,
+                       "epoch": self.current_epoch}, commit=False)
         return nll
 
     def forward(self, noisy_data, extra_data, node_mask):
@@ -1059,6 +1098,4 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         extra_y = torch.cat((extra_y, t), dim=1)
 
         return utils.PlaceHolder(X=extra_X, E=extra_E, y=extra_y)
-
-
 
