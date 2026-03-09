@@ -1,0 +1,38 @@
+2026-03-09 20:21:21,330 INFO    MainThread:14639 [wandb_init.py:setup_run_log_directory():717] Logging user logs to /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-09/19-27-24-barabasi_exp1/wandb/run-20260309_202121-wf06nvo4/logs/debug.log
+2026-03-09 20:21:21,331 INFO    MainThread:14639 [wandb_init.py:setup_run_log_directory():718] Logging internal logs to /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-09/19-27-24-barabasi_exp1/wandb/run-20260309_202121-wf06nvo4/logs/debug-internal.log
+2026-03-09 20:21:21,331 INFO    MainThread:14639 [wandb_init.py:init():844] calling init triggers
+2026-03-09 20:21:21,331 INFO    MainThread:14639 [wandb_init.py:init():849] wandb.init called with sweep_config: {}
+config: {'general': {'name': 'barabasi_exp1', 'wandb': 'online', 'gpus': 1, 'resume': None, 'test_only': None, 'guidance_path': '/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_community.pth', 'check_val_every_n_epochs': 2, 'sample_every_val': 5, 'val_check_interval': None, 'samples_to_generate': 32, 'samples_to_save': 4, 'chains_to_save': 0, 'log_every_steps': 50, 'number_chain_steps': 0, 'final_model_samples_to_generate': 100, 'final_model_samples_to_save': 100, 'final_model_chains_to_save': 0, 'evaluate_all_checkpoints': False}, 'model': {'type': 'discrete', 'use_persist_homo': True, 'extra_features': None, 'transition': 'uniform', 'model': 'graph_tf', 'diffusion_steps': 1000, 'diffusion_noise_schedule': 'cosine', 'n_layers': 5, 'hidden_mlp_dims': {'X': 32, 'E': 32, 'y': 32}, 'hidden_dims': {'dx': 32, 'de': 32, 'dy': 32, 'n_head': 4, 'dim_ffX': 32, 'dim_ffE': 32, 'dim_ffy': 32}, 'lambda_train': [5, 0]}, 'train': {'n_epochs': 100, 'batch_size': 32, 'lr': 5e-05, 'clip_grad': 0.5, 'save_model': True, 'num_workers': 0, 'ema_decay': 0, 'progress_bar': True, 'weight_decay': 1e-12, 'optimizer': 'adamw', 'seed': 0}, 'dataset': {'name': 'mis', 'remove_h': None, 'datadir': '/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/barabasi/', 'max_nodes': 300}, '_wandb': {}}
+2026-03-09 20:21:21,862 WARNING MainThread:14639 [wandb_init.py:init():1587] [no run ID] interrupted
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 1578, in init
+    run = wi.init(run_settings, run_config, run_printer)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 865, in init
+    self._wl.finish_all_active_runs()
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_setup.py", line 166, in finish_all_active_runs
+    run.finish()
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 399, in wrapper
+    return func(self, *args, **kwargs)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 444, in wrapper
+    return func(self, *args, **kwargs)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2279, in finish
+    return self._finish(exit_code)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 399, in wrapper
+    return func(self, *args, **kwargs)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2307, in _finish
+    self._atexit_cleanup(exit_code=exit_code)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2501, in _atexit_cleanup
+    self._on_finish()
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2725, in _on_finish
+    wait_with_progress(
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/mailbox/wait_with_progress.py", line 24, in wait_with_progress
+    return wait_all_with_progress(
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/mailbox/wait_with_progress.py", line 78, in wait_all_with_progress
+    return asyncer.run(progress_loop_with_timeout)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/lib/asyncio_manager.py", line 137, in run
+    return future.result()
+  File "/opt/anaconda3/envs/copho/lib/python3.9/concurrent/futures/_base.py", line 441, in result
+    self._condition.wait(timeout)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/threading.py", line 312, in wait
+    waiter.acquire()
+KeyboardInterrupt

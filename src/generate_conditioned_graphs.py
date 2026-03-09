@@ -231,6 +231,7 @@ def compute_gin_embeddings(graphs_path: str, device: torch.device) -> torch.Tens
 def save_generated_graphs(samples: List, output_path: str) -> None:
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
+    # Overwrite on each run so evaluation does not mix multiple generations.
     with output.open("w", encoding="utf-8") as handle:
         for item in samples:
             n_nodes = int(item[0].shape[0])
@@ -244,7 +245,15 @@ def save_generated_graphs(samples: List, output_path: str) -> None:
                 for bond in bond_list:
                     handle.write(f"{float(bond):.6f} ")
                 handle.write("\n")
-            handle.write("\n")
+
+
+def normalize_condition_embeddings(cond: torch.Tensor) -> torch.Tensor:
+    """Match MISDataset target preprocessing: per-graph max-abs normalization."""
+    if cond.numel() == 0:
+        return cond
+    max_abs = cond.abs().amax(dim=-1, keepdim=True)
+    max_abs = torch.where(max_abs > 0, max_abs, torch.ones_like(max_abs))
+    return cond / max_abs
 
 
 def generate_conditioned_graphs(checkpoint_path: str,
@@ -262,9 +271,20 @@ def generate_conditioned_graphs(checkpoint_path: str,
     model.to(device_t)
     model.eval()
 
+    guidance_loaded = getattr(model, "guidance_model", None) is not None
+    conditioning_enabled = bool(getattr(model, "enable_condition", False))
+    conditioning_active = conditioning_enabled and guidance_loaded
+    print(
+        "Conditioning summary: "
+        f"enabled={conditioning_enabled}, "
+        f"guidance_loaded={guidance_loaded}, "
+        f"active={conditioning_active}"
+    )
+
     cond = compute_gin_embeddings(graphs_path, device_t)
     if cond.dim() == 1:
         cond = cond.unsqueeze(0)
+    cond = normalize_condition_embeddings(cond)
 
     print(f"Condition tensor shape: {cond.shape}")
 
@@ -321,13 +341,13 @@ def generate_conditioned_graphs(checkpoint_path: str,
 
 
 if __name__ == "__main__":
-    checkpoint = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-02-24/09-31-21-mis_dimacs_300/checkpoints/mis_dimacs_300/epoch=9.ckpt"
-    graphs = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/dim/raw/mis.txt"
+    checkpoint = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-09/14-40-41-barabasi_exp1/checkpoints/barabasi_exp1/epoch_epoch=099.ckpt"
+    graphs = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/barabasi/raw/test_100.txt"
 
-    output = "../generated/dimacs_9.txt"
+    output = "../generated/bar_cond_100.txt"
     guidance = '/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_community.pth'
     device = "cpu"
-    per_embedding = 2
+    per_embedding = 1
 
     generate_conditioned_graphs(
         checkpoint_path=checkpoint,

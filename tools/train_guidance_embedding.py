@@ -51,7 +51,7 @@ def main():
     # Load data using MISDataModule
     class SimpleCfg:
         class dataset:
-            datadir = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/dim"
+            datadir = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/barabasi"
         class train:
             batch_size = 32
             num_workers = 0

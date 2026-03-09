@@ -123,7 +123,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.guidance_model = guidance_model
         self.enable_condition = condi_config.enable_condition
         if self.enable_condition and self.guidance_model is None:
-            self.safe_print("[WARNING] Conditioning is enabled but no guidance model was loaded. Disabling conditioning.")
+            self.safe_print("[WARNING] Conditioning is enabled but no guidance model was loaded at init. "
+                            "Conditioning is temporarily disabled and will be re-enabled after assign_guidance_model().")
             self.enable_condition = False
         self.condi_delta = condi_config.condi_delta
         self.sampling_multiplier = condi_config.sampling_multiplier
@@ -149,7 +150,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.guidance_model = gmodel
         if condi_config.enable_condition:
             self.enable_condition = True
-        print("Successfully assigned guidance model")
+        self.safe_print("Successfully assigned guidance model. Conditioning re-enabled.")
 
     def safe_print(self, *args, **kwargs):
         """Print function that works both with and without a Trainer."""
@@ -701,6 +702,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         assert (E == torch.transpose(E, 1, 2)).all()
         assert number_chain_steps < self.T
+        save_chain_frames = number_chain_steps > 0
+        save_vis_chain = save_chain_frames and keep_chain > 0
         chain_X_size = torch.Size((number_chain_steps, keep_chain, X.size(1)))
         chain_E_size = torch.Size((number_chain_steps, keep_chain, E.size(1), E.size(2)))
         rchain_X_size = torch.Size((number_chain_steps, batch_size, X.size(1)))
@@ -747,12 +750,13 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
             # Save the first keep_chain graphs
             #               30   *      50             //   50
-            write_index = (s_int * number_chain_steps) // self.T
-            chain_X[write_index] = discrete_sampled_s.X[:keep_chain]
-            chain_E[write_index] = discrete_sampled_s.E[:keep_chain]
+            if save_chain_frames:
+                write_index = (s_int * number_chain_steps) // self.T
+                chain_X[write_index] = discrete_sampled_s.X[:keep_chain]
+                chain_E[write_index] = discrete_sampled_s.E[:keep_chain]
 
-            rchain_X[write_index] = discrete_sampled_s.X[:]
-            rchain_E[write_index] = discrete_sampled_s.E[:]
+                rchain_X[write_index] = discrete_sampled_s.X[:]
+                rchain_E[write_index] = discrete_sampled_s.E[:]
             #etime = time.time()
             #print(f"step {s_int},time:{etime-stime}")
 
@@ -770,7 +774,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         #)
 
         # Prepare the chain for saving
-        if keep_chain > 0:
+        if save_vis_chain:
             final_X_chain = X[:keep_chain]
             final_E_chain = E[:keep_chain]
 
@@ -796,7 +800,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             molecule_list.append([atom_types, edge_types])
 
         # Visualize chains
-        if self.visualization_tools is not None:
+        if self.visualization_tools is not None and save_vis_chain:
             self.safe_print('Visualizing chains...')
             current_path = os.getcwd()
             num_molecules = chain_X.size(1)  # number of molecules

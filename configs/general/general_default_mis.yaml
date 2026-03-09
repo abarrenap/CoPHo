@@ -10,7 +10,7 @@ resume: null            # If resume, path to ckpt file from outputs directory in
 test_only: null  # Use absolute path
 # 训练完自动会测一遍
 
-guidance_path: /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding.pth
+guidance_path: /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_community.pth
 
 # 这里的参数在训练完后紧接着执行的测试中使用
 check_val_every_n_epochs: 2
@@ -21,7 +21,7 @@ samples_to_generate:  32       # We advise to set it to 2 x batch_size maximum
 samples_to_save: 4
 chains_to_save: 0
 log_every_steps: 50
-number_chain_steps: 50        # Number of frames in each gif
+number_chain_steps: 0        # Number of frames in each gif
 
 
 # final_model_samples_to_generate: 10000
