@@ -14,21 +14,28 @@ import math
 
 from encoder.encoder import load_feature_extractor
 from encoder.load_data import graphs_to_dgl
+from models import condi_config
 
 
-_COND_ENCODER = None
+_COND_ENCODERS = {}
 
 
-def _get_cond_encoder(device: torch.device):
-    global _COND_ENCODER
-    if _COND_ENCODER is None:
-        _COND_ENCODER = load_feature_extractor(device=device)
-    return _COND_ENCODER
+def _get_cond_encoder(device: torch.device, output_dim: int):
+    key = (str(device), int(output_dim), bool(condi_config.gin_use_pretrained), str(condi_config.gin_model_path))
+    if key not in _COND_ENCODERS:
+        _COND_ENCODERS[key] = load_feature_extractor(
+            device=device,
+            output_dim=int(output_dim),
+            use_pretrained=condi_config.gin_use_pretrained,
+            model_path=condi_config.gin_model_path,
+        )
+    return _COND_ENCODERS[key]
 
 
 def _compute_graph_embeddings_from_adj(adj_batch: torch.Tensor,
                                        node_mask: Optional[torch.Tensor],
-                                       device: torch.device) -> torch.Tensor:
+                                       device: torch.device,
+                                       output_dim: int) -> torch.Tensor:
     graphs = []
     bs, n, _ = adj_batch.shape
 
@@ -49,7 +56,7 @@ def _compute_graph_embeddings_from_adj(adj_batch: torch.Tensor,
 
     encoder_device = torch.device("cpu")
     g, h = graphs_to_dgl(graphs, device=encoder_device)
-    encoder = _get_cond_encoder(encoder_device)
+    encoder = _get_cond_encoder(encoder_device, output_dim=output_dim)
 
     with torch.no_grad():
         embeddings = encoder(g, h).detach()
@@ -97,13 +104,17 @@ def condition_relaxed_H(noisy_data, target, target_type, device, threshold=0.50)
 
         condi_metric, indi_func_res = check_struct_condition(metric_tensor, target.reshape(metric_tensor.shape), threshold)  # bool [bs]
     elif target_type == "embedding":
-        node_mask = noisy_data.get('node_mask')
-        embeddings = _compute_graph_embeddings_from_adj(A_t, node_mask, device)
-
         target_tensor = target
         if target_tensor.dim() == 1:
             target_tensor = target_tensor.unsqueeze(0)
         target_tensor = target_tensor.to(device)
+        node_mask = noisy_data.get('node_mask')
+        embeddings = _compute_graph_embeddings_from_adj(
+            A_t,
+            node_mask,
+            device,
+            output_dim=target_tensor.shape[-1],
+        )
 
         emb_norm = F.normalize(embeddings, p=2, dim=-1)
         tgt_norm = F.normalize(target_tensor, p=2, dim=-1)
@@ -308,4 +319,3 @@ def condition_homo_check(
             noisy_prime.append(sliced)
 
     return noisy_prime
-

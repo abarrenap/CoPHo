@@ -131,8 +131,8 @@ class MISDataset(InMemoryDataset):
             emb = enc(g, h).cpu()  # Get graph embedding as label
             if emb.dim() > 2:
                 emb = emb.view(emb.size(0), -1)
-            if emb.dim() == 1:
-                emb = emb.unsqueeze(0)
+            if emb.dim() == 2 and emb.size(0) == 1:
+                emb = emb.squeeze(0)
             max_abs = emb.abs().max().item() if emb.numel() > 0 else 0.0
             if max_abs > 0:
                 emb = emb / max_abs
