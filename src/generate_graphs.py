@@ -92,12 +92,12 @@ def generate_graphs(
 
 if __name__ == "__main__":
 
-    checkpoint = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-07/12-20-54-exp1_train1/checkpoints/exp1_train1/epoch_epoch=059.ckpt"
+    checkpoint = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-10/11-00-32-mixed_size/checkpoints/mixed_size/last.ckpt"
 
-    output = "../generated/mis_uncond_58.txt"
+    output = "../generated/mixed_last_uncond.txt"
     guidance = None #'/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_community.pth'
     device = "cpu"
-    samples = 200
+    samples = 100
 
     generate_graphs(
         checkpoint_path=checkpoint,
