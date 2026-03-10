@@ -150,7 +150,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         pred = self.forward(noisy_data, extra_data, node_mask)
         loss = self.train_loss(masked_pred_X=pred.X, masked_pred_E=pred.E, pred_y=pred.y,
                                true_X=X, true_E=E, true_y=data.y,
-                               log=i % self.log_every_steps == 0)
+                               log=i % self.log_every_steps == 0, epoch=self.current_epoch)
 
         self.train_metrics(masked_pred_X=pred.X, masked_pred_E=pred.E, true_X=X, true_E=E,
                            log=i % self.log_every_steps == 0)
@@ -177,7 +177,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.train_metrics.reset()
 
     def on_train_epoch_end(self) -> None:
-        to_log = self.train_loss.log_epoch_metrics()
+        to_log = self.train_loss.log_epoch_metrics(epoch=self.current_epoch)
         self.print(f"Epoch {self.current_epoch}: X_CE: {to_log['train_epoch/x_CE'] :.3f}"
                    f" -- E_CE: {to_log['train_epoch/E_CE'] :.3f} --"
                    f" y_CE: {to_log['train_epoch/y_CE'] :.3f}"
@@ -214,7 +214,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                        "val/X_kl": metrics[1],
                        "val/E_kl": metrics[2],
                        "val/X_logp": metrics[3],
-                       "val/E_logp": metrics[4]}, commit=False)
+                       "val/E_logp": metrics[4],
+                       "epoch": self.current_epoch}, commit=False)
 
         self.print(f"Epoch {self.current_epoch}: Val NLL {metrics[0] :.2f} -- Val Atom type KL {metrics[1] :.2f} -- ",
                    f"Val Edge type KL: {metrics[2] :.2f}")
@@ -364,14 +365,14 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                 for at in atoms:
                     if isinstance(at, list):
                         for val in at:
-                            f.write(f"{int(val)} ")
+                            f.write(f"{int(val) + 1} ")
                     else:
-                        f.write(f"{int(at)} ")
+                        f.write(f"{int(at) + 1} ")
                 f.write("\n")
                 f.write("E:\n")
                 for bond_list in item[1]:
                     for bond in bond_list:
-                        f.write(f"{float(bond):.6f} ")
+                        f.write(f"{int(round(float(bond)))} ")
                     f.write("\n")
                 f.write("\n")
         self.print("Generated graphs Saved. Computing sampling metrics...")
@@ -588,7 +589,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                        "Estimator loss terms": loss_all_t.mean(),
                        "log_pn": log_pN.mean(),
                        "loss_term_0": loss_term_0,
-                       'batch_test_nll' if test else 'val_nll': nll}, commit=False)
+                       'batch_test_nll' if test else 'val_nll': nll,
+                       "epoch": self.current_epoch}, commit=False)
         return nll
 
     def forward(self, noisy_data, extra_data, node_mask):
@@ -610,6 +612,12 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         :param keep_chain_steps: number of timesteps to save for each chain
         :return: molecule_list. Each element of this list is a tuple (atom_types, charges, positions)
         """
+        def _log(*args, **kwargs):
+            if getattr(self, "_trainer", None) is not None:
+                self.print(*args, **kwargs)
+            else:
+                print(*args, **kwargs)
+
         if num_nodes is None:
             n_nodes = self.node_dist.sample_n(batch_size, self.device)
         elif type(num_nodes) == int:
@@ -697,7 +705,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         # Visualize chains
         if self.visualization_tools is not None:
-            self.print('Visualizing chains...')
+            _log('Visualizing chains...')
             current_path = os.getcwd()
             num_molecules = chain_X.size(1)  # number of molecules
             for i in range(num_molecules):
@@ -709,15 +717,15 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                     _ = self.visualization_tools.visualize_chain(result_path,
                                                                  chain_X[:, i, :].numpy(),
                                                                  chain_E[:, i, :].numpy())
-                self.print('\r{}/{} complete'.format(i + 1, num_molecules), end='', flush=True)
-            self.print('\nVisualizing molecules...')
+                _log('\r{}/{} complete'.format(i + 1, num_molecules), end='', flush=True)
+            _log('\nVisualizing molecules...')
 
             # Visualize the final molecules
             current_path = os.getcwd()
             result_path = os.path.join(current_path,
                                        f'graphs/{self.name}/epoch{self.current_epoch}_b{batch_id}/')
             self.visualization_tools.visualize(result_path, molecule_list, save_final)
-            self.print("Done.")
+            _log("Done.")
 
         return molecule_list, rchain_X, rchain_E
 

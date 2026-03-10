@@ -216,12 +216,18 @@ def compute_gin_embeddings(graphs_path: str, device: torch.device) -> torch.Tens
     graphs = load_graphs_from_txt(graphs_path)
     print(f"Loaded {len(graphs)} graphs from {graphs_path}")
     g, h = graphs_to_dgl(graphs, device=torch.device("cpu"))
-    encoder = load_feature_extractor(
-        device=torch.device("cpu"),
-        output_dim=70,
-        use_pretrained=condi_config.gin_use_pretrained,
-        model_path=condi_config.gin_model_path,
-    )
+    gin_use_pretrained = getattr(condi_config, "gin_use_pretrained", True)
+    gin_model_path = getattr(condi_config, "gin_model_path", None)
+
+    encoder_kwargs = {
+        "device": torch.device("cpu"),
+        "output_dim": 70,
+        "use_pretrained": gin_use_pretrained,
+    }
+    if gin_model_path:
+        encoder_kwargs["model_path"] = gin_model_path
+
+    encoder = load_feature_extractor(**encoder_kwargs)
     with torch.no_grad():
         embeddings = encoder(g, h).detach()
     print(f"Generated {embeddings.shape[0]} embeddings")
@@ -243,7 +249,7 @@ def save_generated_graphs(samples: List, output_path: str) -> None:
             handle.write("E:\n")
             for bond_list in item[1]:
                 for bond in bond_list:
-                    handle.write(f"{float(bond):.6f} ")
+                    handle.write(f"{int(round(float(bond)))} ")
                 handle.write("\n")
 
 
@@ -341,10 +347,10 @@ def generate_conditioned_graphs(checkpoint_path: str,
 
 
 if __name__ == "__main__":
-    checkpoint = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-09/14-40-41-barabasi_exp1/checkpoints/barabasi_exp1/epoch_epoch=099.ckpt"
-    graphs = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/barabasi/raw/test_100.txt"
+    checkpoint = "/users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-10/08-54-52-barabasi_exp1/checkpoints/barabasi_exp1/epoch=45.ckpt"
+    graphs = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/barabasi/raw/test_32.txt"
 
-    output = "../generated/bar_cond_100.txt"
+    output = "../generated/45.txt"
     guidance = '/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_community.pth'
     device = "cpu"
     per_embedding = 1

@@ -870,6 +870,7 @@ class SpectreSamplingMetrics(nn.Module):
         if local_rank == 0:
             print("Sampling statistics", to_log)
         if wandb.run:
+            to_log["epoch"] = current_epoch
             wandb.log(to_log, commit=False)
 
     def reset(self):
@@ -936,7 +937,8 @@ class TSPSamplingMetrics(SpectreSamplingMetrics):
             to_log = {
                 'tsp/validity': tsp_valid.item(),
                 'tsp/avg_tour_length': tsp_tour.item() if tsp_tour != float('inf') else -1,
-                'tsp/graph_density': tsp_dens.item()
+                'tsp/graph_density': tsp_dens.item(),
+                'epoch': current_epoch
             }
             
             if local_rank == 0:

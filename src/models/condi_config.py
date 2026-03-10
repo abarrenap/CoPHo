@@ -28,3 +28,7 @@ condition_threshold = 0.1
 
 all_condition_phase_s = 1.2
 all_condition_phase_e = 1.0
+
+# GIN embedding encoder settings used by generation scripts.
+gin_use_pretrained = True
+gin_model_path = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/random_gin.pt"

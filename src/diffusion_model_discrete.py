@@ -343,14 +343,14 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                 for at in atoms:
                     if isinstance(at, list):
                         for val in at:
-                            f.write(f"{int(val)} ")
+                            f.write(f"{int(val) + 1} ")
                     else:
-                        f.write(f"{int(at)} ")
+                        f.write(f"{int(at) + 1} ")
                 f.write("\n")
                 f.write("E:\n")
                 for bond_list in item[1]:
                     for bond in bond_list:
-                        f.write(f"{float(bond):.6f} ")
+                        f.write(f"{int(round(float(bond)))} ")
                     f.write("\n")
                 f.write("\n")
         self.print("Generated graphs Saved. Computing sampling metrics...")
@@ -562,6 +562,12 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         :param keep_chain_steps: number of timesteps to save for each chain
         :return: molecule_list. Each element of this list is a tuple (atom_types, charges, positions)
         """
+        def _log(*args, **kwargs):
+            if getattr(self, "_trainer", None) is not None:
+                self.print(*args, **kwargs)
+            else:
+                print(*args, **kwargs)
+
         if num_nodes is None:
             n_nodes = self.node_dist.sample_n(batch_size, self.device)
         elif type(num_nodes) == int:
@@ -644,7 +650,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         # Visualize chains
         if self.visualization_tools is not None:
             if keep_chain > 0 and number_chain_steps > 0:
-                self.print('Visualizing chains...')
+                _log('Visualizing chains...')
                 current_path = os.getcwd()
                 num_molecules = chain_X.size(1)       # number of molecules
                 for i in range(num_molecules):
@@ -656,15 +662,15 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                         _ = self.visualization_tools.visualize_chain(result_path,
                                                                      chain_X[:, i, :].numpy(),
                                                                      chain_E[:, i, :].numpy())
-                    self.print('\r{}/{} complete'.format(i+1, num_molecules), end='', flush=True)
-            self.print('\nVisualizing molecules...')
+                    _log('\r{}/{} complete'.format(i+1, num_molecules), end='', flush=True)
+            _log('\nVisualizing molecules...')
 
             # Visualize the final molecules
             current_path = os.getcwd()
             result_path = os.path.join(current_path,
                                        f'graphs/{self.name}/epoch{self.current_epoch}_b{batch_id}/')
             self.visualization_tools.visualize(result_path, molecule_list, save_final)
-            self.print("Done.")
+            _log("Done.")
 
         return molecule_list
 

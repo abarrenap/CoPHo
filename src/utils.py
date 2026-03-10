@@ -136,4 +136,8 @@ def setup_wandb(cfg):
     kwargs = {'name': cfg.general.name, 'project': f'graph_ddm_{cfg.dataset.name}', 'config': config_dict,
               'settings': wandb.Settings(_disable_stats=True), 'reinit': True, 'mode': cfg.general.wandb}
     wandb.init(**kwargs)
+    if wandb.run:
+        # Track all metrics against explicit epoch when provided.
+        wandb.define_metric("epoch")
+        wandb.define_metric("*", step_metric="epoch")
     wandb.save('*.txt')

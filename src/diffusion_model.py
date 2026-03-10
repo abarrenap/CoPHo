@@ -318,14 +318,14 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                 for at in atoms:
                     if isinstance(at, list):
                         for val in at:
-                            f.write(f"{int(val)} ")
+                            f.write(f"{int(val) + 1} ")
                     else:
-                        f.write(f"{int(at)} ")
+                        f.write(f"{int(at) + 1} ")
                 f.write("\n")
                 f.write("E:\n")
                 for bond_list in item[1]:
                     for bond in bond_list:
-                        f.write(f"{float(bond):.6f} ")
+                        f.write(f"{int(round(float(bond)))} ")
                     f.write("\n")
                 f.write("\n")
 

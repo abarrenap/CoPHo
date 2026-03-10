@@ -136,6 +136,7 @@ class SamplingMolecularMetrics(nn.Module):
         valency_mae = self.valency_dist_mae.compute()
 
         if wandb.run:
+            to_log['epoch'] = current_epoch
             wandb.log(to_log, commit=False)
             wandb.run.summary['Gen n distribution'] = generated_n_dist
             wandb.run.summary['Gen node distribution'] = generated_node_dist
@@ -145,7 +146,8 @@ class SamplingMolecularMetrics(nn.Module):
             wandb.log({'basic_metrics/n_mae': n_mae,
                        'basic_metrics/node_mae': node_mae,
                        'basic_metrics/edge_mae': edge_mae,
-                       'basic_metrics/valency_mae': valency_mae}, commit=False)
+                       'basic_metrics/valency_mae': valency_mae,
+                       'epoch': current_epoch}, commit=False)
 
         if local_rank == 0:
             print("Custom metrics computed.")
