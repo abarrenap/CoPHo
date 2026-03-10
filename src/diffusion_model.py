@@ -103,7 +103,7 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                               true_epsX=noisy_data['epsX'],
                               true_epsE=noisy_data['epsE'],
                               true_y=noisy_data['epsy'],
-                              log=i % self.log_every_steps == 0)
+                              log=i % self.log_every_steps == 0, epoch=self.current_epoch)
 
         self.train_metrics(masked_pred_epsX=pred.X,
                            masked_pred_epsE=pred.E,
@@ -129,7 +129,7 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
         self.train_metrics.reset()
 
     def on_train_epoch_end(self) -> None:
-        to_log = self.train_loss.log_epoch_metrics()
+        to_log = self.train_loss.log_epoch_metrics(epoch=self.current_epoch)
         self.print(f"Epoch {self.current_epoch}: X_mse: {to_log['train_epoch/epoch_X_mse'] :.3f}"
                       f" -- E mse: {to_log['train_epoch/epoch_E_mse'] :.3f} --"
                       f" y_mse: {to_log['train_epoch/epoch_y_mse'] :.3f}"
@@ -172,7 +172,8 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                        "val/y_mse": metrics[3],
                        "val/X_logp": metrics[4],
                        "val/E_logp": metrics[5],
-                       "val/y_logp": metrics[6]}, commit=False)
+                       "val/y_logp": metrics[6],
+                       "epoch": self.current_epoch}, commit=False)
 
         print(f"Epoch {self.current_epoch}: Val NLL {metrics[0] :.2f} -- Val Atom type MSE {metrics[1] :.2f} -- ",
               f"Val Edge type MSE: {metrics[2] :.2f} -- Val Global feat. MSE {metrics[3] :.2f}",
@@ -183,7 +184,9 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
         val_nll = metrics[0]
         self.log("val/epoch_NLL", val_nll, sync_dist=True)
         if wandb.run:
-            wandb.log(self.log_info(), commit=False)
+            val_info = self.log_info()
+            val_info["epoch"] = self.current_epoch
+            wandb.log(val_info, commit=False)
 
         if val_nll < self.best_val_nll:
             self.best_val_nll = val_nll
@@ -204,6 +207,8 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                 to_generate = min(samples_left_to_generate, bs)
                 to_save = min(samples_left_to_save, bs)
                 chains_save = min(chains_left_to_save, bs)
+                if self.number_chain_steps <= 0:
+                    chains_save = 0
                 samples.extend(self.sample_batch(batch_id=ident,
                                                  batch_size=to_generate,
                                                  num_nodes=None, save_final=to_save,
@@ -254,7 +259,8 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
          "test/y_mse": metrics[3],
          "test/X_logp": metrics[4],
          "test/E_logp": metrics[5],
-         "test/y_logp": metrics[6]}
+         "test/y_logp": metrics[6],
+         "epoch": self.current_epoch}
         if wandb.run:
             wandb.log(log_dict, commit=False)
 
@@ -265,8 +271,10 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
 
         test_nll = metrics[0]
         if wandb.run:
-            wandb.log({"test/epoch_NLL": test_nll}, commit=False)
-            wandb.log(self.log_info(), commit=False)
+            wandb.log({"test/epoch_NLL": test_nll, "epoch": self.current_epoch}, commit=False)
+            test_info = self.log_info()
+            test_info["epoch"] = self.current_epoch
+            wandb.log(test_info, commit=False)
 
         print(f'Test loss: {test_nll :.4f}')
 
@@ -281,6 +289,8 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
             to_generate = min(samples_left_to_generate, bs)
             to_save = min(samples_left_to_save, bs)
             chains_save = min(chains_left_to_save, bs)
+            if self.number_chain_steps <= 0:
+                chains_save = 0
             samples.extend(self.sample_batch(id, to_generate, num_nodes=None, save_final=to_save,
                                              keep_chain=chains_save, number_chain_steps=self.number_chain_steps))
             id += to_generate
@@ -560,7 +570,8 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                    "Estimator loss terms": loss_all_t.mean(),
                    "Loss term 0": loss_term_0,
                    "log_pn": log_pN.mean(),
-                   'test_nll' if test else 'val_nll': nll},
+                   'test_nll' if test else 'val_nll': nll,
+                   "epoch": self.current_epoch},
                   commit=False)
         return nll
 
@@ -621,7 +632,10 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
         X, E, y = z_T.X, z_T.E, z_T.y
 
         assert (E == torch.transpose(E, 1, 2)).all()
-        assert number_chain_steps < self.T
+        number_chain_steps = int(number_chain_steps)
+        if number_chain_steps <= 0:
+            keep_chain = 0
+        assert 0 <= number_chain_steps < self.T
         chain_X_size = torch.Size((number_chain_steps, keep_chain, X.size(1)))
         chain_E_size = torch.Size((number_chain_steps, keep_chain, E.size(1), E.size(2)))
 
@@ -639,15 +653,15 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
 
             z_s = self.sample_p_zs_given_zt(s=s_norm, t=t_norm, X_t=X, E_t=E, y_t=y, node_mask=node_mask)
             X, E, y = z_s.X, z_s.E, z_s.y
-            write_index = (s_int * number_chain_steps) // self.T
-            unnormalized = utils.unnormalize(X=X[:keep_chain], E=E[:keep_chain], y=y[:keep_chain],
-                                             norm_values=self.norm_values,
-                                             norm_biases=self.norm_biases,
-                                             node_mask=node_mask[:keep_chain],
-                                             collapse=True)
-
-            chain_X[write_index] = unnormalized.X
-            chain_E[write_index] = unnormalized.E
+            if keep_chain > 0 and number_chain_steps > 0:
+                write_index = (s_int * number_chain_steps) // self.T
+                unnormalized = utils.unnormalize(X=X[:keep_chain], E=E[:keep_chain], y=y[:keep_chain],
+                                                 norm_values=self.norm_values,
+                                                 norm_biases=self.norm_biases,
+                                                 node_mask=node_mask[:keep_chain],
+                                                 collapse=True)
+                chain_X[write_index] = unnormalized.X
+                chain_E[write_index] = unnormalized.E
             average_X_coord.append(X.abs().mean().item())
             average_E_coord.append(E.abs().mean().item())
 
@@ -657,7 +671,7 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
         assert (E == torch.transpose(E, 1, 2)).all()
 
         # Prepare the chain for saving
-        if keep_chain > 0:
+        if keep_chain > 0 and number_chain_steps > 0:
             final_X_chain = X[:keep_chain]
             final_E_chain = E[:keep_chain]
             
@@ -715,19 +729,20 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
 
         # Visualize chains
         if self.visualization_tools is not None:
-            print('Visualizing chains...')
-            current_path = os.getcwd()
-            num_molecules = chain_X.size(1)       # number of molecules
-            for i in range(num_molecules):
-                result_path = os.path.join(current_path, f'chains/{self.cfg.general.name}/'
-                                                         f'epoch{self.current_epoch}/'
-                                                         f'chains/molecule_{batch_id + i}')
-                if not os.path.exists(result_path):
-                    os.makedirs(result_path)
-                    _ = self.visualization_tools.visualize_chain(result_path,
-                                                                 chain_X[:, i, :].numpy(),
-                                                                 chain_E[:, i, :].numpy())
-                print('\r{}/{} complete'.format(i+1, num_molecules), end='', flush=True)
+            if keep_chain > 0 and number_chain_steps > 0:
+                print('Visualizing chains...')
+                current_path = os.getcwd()
+                num_molecules = chain_X.size(1)       # number of molecules
+                for i in range(num_molecules):
+                    result_path = os.path.join(current_path, f'chains/{self.cfg.general.name}/'
+                                                             f'epoch{self.current_epoch}/'
+                                                             f'chains/molecule_{batch_id + i}')
+                    if not os.path.exists(result_path):
+                        os.makedirs(result_path)
+                        _ = self.visualization_tools.visualize_chain(result_path,
+                                                                     chain_X[:, i, :].numpy(),
+                                                                     chain_E[:, i, :].numpy())
+                    print('\r{}/{} complete'.format(i+1, num_molecules), end='', flush=True)
 
             # Visualize the final molecules
             print("Visualizing molecules...")

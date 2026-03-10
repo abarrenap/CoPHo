@@ -142,7 +142,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         pred = self.forward(noisy_data, extra_data, node_mask)
         loss = self.train_loss(masked_pred_X=pred.X, masked_pred_E=pred.E, pred_y=pred.y,
                                true_X=X, true_E=E, true_y=data.y,
-                               log=i % self.log_every_steps == 0)
+                               log=i % self.log_every_steps == 0, epoch=self.current_epoch)
 
         self.train_metrics(masked_pred_X=pred.X, masked_pred_E=pred.E, true_X=X, true_E=E,
                            log=i % self.log_every_steps == 0)
@@ -169,7 +169,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.train_metrics.reset()
 
     def on_train_epoch_end(self) -> None:
-        to_log = self.train_loss.log_epoch_metrics()
+        to_log = self.train_loss.log_epoch_metrics(epoch=self.current_epoch)
         self.print(f"Epoch {self.current_epoch}: X_CE: {to_log['train_epoch/x_CE'] :.3f}"
                       f" -- E_CE: {to_log['train_epoch/E_CE'] :.3f} --"
                       f" y_CE: {to_log['train_epoch/y_CE'] :.3f}"
@@ -206,7 +206,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                        "val/X_kl": metrics[1],
                        "val/E_kl": metrics[2],
                        "val/X_logp": metrics[3],
-                       "val/E_logp": metrics[4]}, commit=False)
+                       "val/E_logp": metrics[4],
+                       "epoch": self.current_epoch}, commit=False)
 
         self.print(f"Epoch {self.current_epoch}: Val NLL {metrics[0] :.2f} -- Val Atom type KL {metrics[1] :.2f} -- ",
                    f"Val Edge type KL: {metrics[2] :.2f}")
@@ -240,6 +241,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                 to_generate = min(samples_left_to_generate, bs, len(y_cond))
                 to_save = min(samples_left_to_save, bs, len(y_cond))
                 chains_save = min(chains_left_to_save, bs, len(y_cond))
+                if self.number_chain_steps <= 0:
+                    chains_save = 0
                 y_cond = y_cond[:to_generate]
                 samples.extend(self.sample_batch(batch_id=ident, batch_size=to_generate, num_nodes=None,
                                                  save_final=to_save,
@@ -284,14 +287,15 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                        "test/X_kl": metrics[1],
                        "test/E_kl": metrics[2],
                        "test/X_logp": metrics[3],
-                       "test/E_logp": metrics[4]}, commit=False)
+                       "test/E_logp": metrics[4],
+                       "epoch": self.current_epoch}, commit=False)
 
         self.print(f"Epoch {self.current_epoch}: Test NLL {metrics[0] :.2f} -- Test Atom type KL {metrics[1] :.2f} -- ",
                    f"Test Edge type KL: {metrics[2] :.2f}")
 
         test_nll = metrics[0]
         if wandb.run:
-            wandb.log({"test/epoch_NLL": test_nll}, commit=False)
+            wandb.log({"test/epoch_NLL": test_nll, "epoch": self.current_epoch}, commit=False)
 
         self.print(f'Test loss: {test_nll :.4f}')
 
@@ -314,6 +318,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             to_generate = min(samples_left_to_generate, bs, len(y_cond))
             to_save = min(samples_left_to_save, bs, len(y_cond))
             chains_save = min(chains_left_to_save, bs, len(y_cond))
+            if self.number_chain_steps <= 0:
+                chains_save = 0
             y_cond = y_cond[:to_generate]
 
             samples.extend(self.sample_batch(id, to_generate, num_nodes=None, save_final=to_save,
@@ -533,7 +539,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                        "Estimator loss terms": loss_all_t.mean(),
                        "log_pn": log_pN.mean(),
                        "loss_term_0": loss_term_0,
-                       'batch_test_nll' if test else 'val_nll': nll}, commit=False)
+                       'batch_test_nll' if test else 'val_nll': nll,
+                       "epoch": self.current_epoch}, commit=False)
         return nll
 
     def forward(self, noisy_data, extra_data, node_mask):
@@ -578,7 +585,10 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             print("[DEBUG] y_cond is none")
 
         assert (E == torch.transpose(E, 1, 2)).all()
-        assert number_chain_steps < self.T
+        number_chain_steps = int(number_chain_steps)
+        if number_chain_steps <= 0:
+            keep_chain = 0
+        assert 0 <= number_chain_steps < self.T
         chain_X_size = torch.Size((number_chain_steps, keep_chain, X.size(1)))
         chain_E_size = torch.Size((number_chain_steps, keep_chain, E.size(1), E.size(2)))
 
@@ -597,9 +607,10 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             X, E, _ = sampled_s.X, sampled_s.E, sampled_s.y
 
             # Save the first keep_chain graphs
-            write_index = (s_int * number_chain_steps) // self.T
-            chain_X[write_index] = discrete_sampled_s.X[:keep_chain]
-            chain_E[write_index] = discrete_sampled_s.E[:keep_chain]
+            if keep_chain > 0 and number_chain_steps > 0:
+                write_index = (s_int * number_chain_steps) // self.T
+                chain_X[write_index] = discrete_sampled_s.X[:keep_chain]
+                chain_E[write_index] = discrete_sampled_s.E[:keep_chain]
 
         # Sample
         sampled_s = sampled_s.mask(node_mask, collapse=True)
@@ -608,7 +619,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
 
         # Prepare the chain for saving
-        if keep_chain > 0:
+        if keep_chain > 0 and number_chain_steps > 0:
             final_X_chain = X[:keep_chain]
             final_E_chain = E[:keep_chain]
 
@@ -632,19 +643,20 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         # Visualize chains
         if self.visualization_tools is not None:
-            self.print('Visualizing chains...')
-            current_path = os.getcwd()
-            num_molecules = chain_X.size(1)       # number of molecules
-            for i in range(num_molecules):
-                result_path = os.path.join(current_path, f'chains/{self.cfg.general.name}/'
-                                                         f'epoch{self.current_epoch}/'
-                                                         f'chains/molecule_{batch_id + i}')
-                if not os.path.exists(result_path):
-                    os.makedirs(result_path)
-                    _ = self.visualization_tools.visualize_chain(result_path,
-                                                                 chain_X[:, i, :].numpy(),
-                                                                 chain_E[:, i, :].numpy())
-                self.print('\r{}/{} complete'.format(i+1, num_molecules), end='', flush=True)
+            if keep_chain > 0 and number_chain_steps > 0:
+                self.print('Visualizing chains...')
+                current_path = os.getcwd()
+                num_molecules = chain_X.size(1)       # number of molecules
+                for i in range(num_molecules):
+                    result_path = os.path.join(current_path, f'chains/{self.cfg.general.name}/'
+                                                             f'epoch{self.current_epoch}/'
+                                                             f'chains/molecule_{batch_id + i}')
+                    if not os.path.exists(result_path):
+                        os.makedirs(result_path)
+                        _ = self.visualization_tools.visualize_chain(result_path,
+                                                                     chain_X[:, i, :].numpy(),
+                                                                     chain_E[:, i, :].numpy())
+                    self.print('\r{}/{} complete'.format(i+1, num_molecules), end='', flush=True)
             self.print('\nVisualizing molecules...')
 
             # Visualize the final molecules

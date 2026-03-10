@@ -255,6 +255,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                 to_generate = min(samples_left_to_generate, bs, len(y_cond))
                 to_save = min(samples_left_to_save, bs, len(y_cond))
                 chains_save = min(chains_left_to_save, bs, len(y_cond))
+                if self.number_chain_steps <= 0:
+                    chains_save = 0
                 y_cond = y_cond[:to_generate]
                 molecule_list, _, _ = self.sample_batch(batch_id=ident, batch_size=to_generate, num_nodes=None,
                                                         save_final=to_save,
@@ -341,6 +343,8 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             to_generate = min(samples_left_to_generate, bs, len(cond))
             to_save = min(samples_left_to_save, bs, len(cond))
             chains_save = min(chains_left_to_save, bs, len(cond))
+            if self.number_chain_steps <= 0:
+                chains_save = 0
             cond_batch = cond[:to_generate]
 
             all_chain_X = []  # 用于保存所有 batch 的 chain_X
@@ -385,31 +389,32 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                 f.write("\n")
         self.print("Generated graphs Saved. Computing sampling metrics...")
 
-        # 设置一个新的文件名，用于保存中间链信息
-        for i in range(1, 50):
-            chain_filename = (f"intermediate_chains_comm|conditions-{self.condition_target[0]}"
-                              f"|phase{self.condition_phase_s}-{self.condition_phase_e}|"
-                              f"mode{self.condition_mode}-{i}.txt")
-            if os.path.exists(chain_filename):
-                continue
-            else:
-                break
+        if self.number_chain_steps > 0:
+            # 设置一个新的文件名，用于保存中间链信息
+            for i in range(1, 50):
+                chain_filename = (f"intermediate_chains_comm|conditions-{self.condition_target[0]}"
+                                  f"|phase{self.condition_phase_s}-{self.condition_phase_e}|"
+                                  f"mode{self.condition_mode}-{i}.txt")
+                if os.path.exists(chain_filename):
+                    continue
+                else:
+                    break
 
-        chain_counts = 0
-        with open(chain_filename, 'w') as f:
-            # 遍历所有 batch 的链信息，每个 chain_X 的 shape 大致为 (number_chain_steps+10, keep_chain, n_nodes)
-            for batch_idx, (chain_X, chain_E) in enumerate(zip(all_chain_X, all_chain_E)):
-                f.write(f"Batch {batch_idx}:\n")
-                num_steps = chain_X.shape[0]
-                for step in range(num_steps):
-                    f.write(f"Step {step}:\n")
-                    f.write("X:\n")
-                    # 假设可以直接打印 tensor 的数据或者转换为 list
-                    f.write(str(chain_X[step].tolist()) + "\n")
-                    f.write("E:\n")
-                    f.write(str(chain_E[step].tolist()) + "\n")
-                    f.write("\n")
-                    chain_counts += 1
+            chain_counts = 0
+            with open(chain_filename, 'w') as f:
+                # 遍历所有 batch 的链信息，每个 chain_X 的 shape 大致为 (number_chain_steps+10, keep_chain, n_nodes)
+                for batch_idx, (chain_X, chain_E) in enumerate(zip(all_chain_X, all_chain_E)):
+                    f.write(f"Batch {batch_idx}:\n")
+                    num_steps = chain_X.shape[0]
+                    for step in range(num_steps):
+                        f.write(f"Step {step}:\n")
+                        f.write("X:\n")
+                        # 假设可以直接打印 tensor 的数据或者转换为 list
+                        f.write(str(chain_X[step].tolist()) + "\n")
+                        f.write("E:\n")
+                        f.write(str(chain_E[step].tolist()) + "\n")
+                        f.write("\n")
+                        chain_counts += 1
 
         self.sampling_metrics(samples, self.name, self.current_epoch, self.val_counter, test=True,
                                local_rank=self.local_rank)
@@ -642,7 +647,10 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
             print("[DEBUG] y_cond is none")
 
         assert (E == torch.transpose(E, 1, 2)).all()
-        assert number_chain_steps < self.T
+        number_chain_steps = int(number_chain_steps)
+        if number_chain_steps <= 0:
+            keep_chain = 0
+        assert 0 <= number_chain_steps < self.T
         chain_X_size = torch.Size((number_chain_steps, keep_chain, X.size(1)))
         chain_E_size = torch.Size((number_chain_steps, keep_chain, E.size(1), E.size(2)))
         rchain_X_size = torch.Size((number_chain_steps, batch_size, X.size(1)))
@@ -688,13 +696,14 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
                 sampling_step_strict_homos.append(cur_strict_homos)
 
             # Save the first keep_chain graphs
-            #               30   *      50             //   50
-            write_index = (s_int * number_chain_steps) // self.T
-            chain_X[write_index] = discrete_sampled_s.X[:keep_chain]
-            chain_E[write_index] = discrete_sampled_s.E[:keep_chain]
-
-            rchain_X[write_index] = discrete_sampled_s.X[:]
-            rchain_E[write_index] = discrete_sampled_s.E[:]
+            if number_chain_steps > 0:
+                #               30   *      50             //   50
+                write_index = (s_int * number_chain_steps) // self.T
+                if keep_chain > 0:
+                    chain_X[write_index] = discrete_sampled_s.X[:keep_chain]
+                    chain_E[write_index] = discrete_sampled_s.E[:keep_chain]
+                rchain_X[write_index] = discrete_sampled_s.X[:]
+                rchain_E[write_index] = discrete_sampled_s.E[:]
             #etime = time.time()
             #print(f"step {s_int},time:{etime-stime}")
 
@@ -712,7 +721,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         #)
 
         # Prepare the chain for saving
-        if keep_chain > 0:
+        if keep_chain > 0 and number_chain_steps > 0:
             final_X_chain = X[:keep_chain]
             final_E_chain = E[:keep_chain]
 
@@ -739,19 +748,20 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
 
         # Visualize chains
         if self.visualization_tools is not None:
-            self.print('Visualizing chains...')
-            current_path = os.getcwd()
-            num_molecules = chain_X.size(1)  # number of molecules
-            for i in range(num_molecules):
-                result_path = os.path.join(current_path, f'chains/{self.cfg.general.name}/'
-                                                         f'epoch{self.current_epoch}/'
-                                                         f'chains/molecule_{batch_id + i}')
-                if not os.path.exists(result_path):
-                    os.makedirs(result_path)
-                    _ = self.visualization_tools.visualize_chain(result_path,
-                                                                 chain_X[:, i, :].numpy(),
-                                                                 chain_E[:, i, :].numpy())
-                self.print('\r{}/{} complete'.format(i + 1, num_molecules), end='', flush=True)
+            if keep_chain > 0 and number_chain_steps > 0:
+                self.print('Visualizing chains...')
+                current_path = os.getcwd()
+                num_molecules = chain_X.size(1)  # number of molecules
+                for i in range(num_molecules):
+                    result_path = os.path.join(current_path, f'chains/{self.cfg.general.name}/'
+                                                             f'epoch{self.current_epoch}/'
+                                                             f'chains/molecule_{batch_id + i}')
+                    if not os.path.exists(result_path):
+                        os.makedirs(result_path)
+                        _ = self.visualization_tools.visualize_chain(result_path,
+                                                                     chain_X[:, i, :].numpy(),
+                                                                     chain_E[:, i, :].numpy())
+                    self.print('\r{}/{} complete'.format(i + 1, num_molecules), end='', flush=True)
             self.print('\nVisualizing molecules...')
 
             # Visualize the final molecules
@@ -1037,6 +1047,5 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         extra_y = torch.cat((extra_y, t), dim=1)
 
         return utils.PlaceHolder(X=extra_X, E=extra_E, y=extra_y)
-
 
 

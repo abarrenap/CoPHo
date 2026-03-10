@@ -25,7 +25,7 @@ class TrainLoss(nn.Module):
         self.train_edge_mse = EdgeMSE()
         self.train_y_mse = MeanSquaredError()
 
-    def forward(self, masked_pred_epsX, masked_pred_epsE, pred_y, true_epsX, true_epsE, true_y, log: bool):
+    def forward(self, masked_pred_epsX, masked_pred_epsE, pred_y, true_epsX, true_epsE, true_y, log: bool, epoch=None):
         mse_X = self.train_node_mse(masked_pred_epsX, true_epsX) if true_epsX.numel() > 0 else torch.tensor(0.0, device=masked_pred_epsX.device)
         mse_E = self.train_edge_mse(masked_pred_epsE, true_epsE) if true_epsE.numel() > 0 else torch.tensor(0.0, device=masked_pred_epsE.device)
         mse_y = self.train_y_mse(pred_y, true_y) if true_y.numel() > 0 else torch.tensor(0.0, device=pred_y.device)
@@ -36,6 +36,8 @@ class TrainLoss(nn.Module):
                       'train_loss/node_MSE': self.train_node_mse.compute(),
                       'train_loss/edge_MSE': self.train_edge_mse.compute(),
                       'train_loss/y_mse': self.train_y_mse.compute()}
+            if epoch is not None:
+                to_log['epoch'] = epoch
             if wandb.run:
                 wandb.log(to_log, commit=True)
 
@@ -45,7 +47,7 @@ class TrainLoss(nn.Module):
         for metric in (self.train_node_mse, self.train_edge_mse, self.train_y_mse):
             metric.reset()
 
-    def log_epoch_metrics(self):
+    def log_epoch_metrics(self, epoch=None):
         epoch_node_mse = self.train_node_mse.compute() if self.train_node_mse.total > 0 else -1
         epoch_edge_mse = self.train_edge_mse.compute() if self.train_edge_mse.total > 0 else -1
         epoch_y_mse = self.train_y_mse.compute() if self.train_y_mse.total > 0 else -1
@@ -53,6 +55,8 @@ class TrainLoss(nn.Module):
         to_log = {"train_epoch/epoch_X_mse": epoch_node_mse,
                   "train_epoch/epoch_E_mse": epoch_edge_mse,
                   "train_epoch/epoch_y_mse": epoch_y_mse}
+        if epoch is not None:
+            to_log['epoch'] = epoch
         if wandb.run:
             wandb.log(to_log)
         return to_log
@@ -68,7 +72,7 @@ class TrainLossDiscrete(nn.Module):
         self.y_loss = CrossEntropyMetric()
         self.lambda_train = lambda_train
 
-    def forward(self, masked_pred_X, masked_pred_E, pred_y, true_X, true_E, true_y, log: bool):
+    def forward(self, masked_pred_X, masked_pred_E, pred_y, true_X, true_E, true_y, log: bool, epoch=None):
         """ Compute train metrics
         masked_pred_X : tensor -- (bs, n, dx)
         masked_pred_E : tensor -- (bs, n, n, de)
@@ -103,6 +107,8 @@ class TrainLossDiscrete(nn.Module):
                       "train_loss/E_CE": self.edge_loss.compute() if true_E.numel() > 0 else -1,
                       "train_loss/y_CE": -1}
                       #"train_loss/y_CE": self.y_loss.compute() if true_y.numel() > 0 else -1}
+            if epoch is not None:
+                to_log['epoch'] = epoch
             if wandb.run:
                 wandb.log(to_log, commit=True)
         return loss_X + self.lambda_train[0] * loss_E + self.lambda_train[1] * loss_y
@@ -111,7 +117,7 @@ class TrainLossDiscrete(nn.Module):
         for metric in [self.node_loss, self.edge_loss, self.y_loss]:
             metric.reset()
 
-    def log_epoch_metrics(self):
+    def log_epoch_metrics(self, epoch=None):
         epoch_node_loss = self.node_loss.compute() if self.node_loss.total_samples > 0 else -1
         epoch_edge_loss = self.edge_loss.compute() if self.edge_loss.total_samples > 0 else -1
         epoch_y_loss = self.train_y_loss.compute() if self.y_loss.total_samples > 0 else -1
@@ -119,10 +125,11 @@ class TrainLossDiscrete(nn.Module):
         to_log = {"train_epoch/x_CE": epoch_node_loss,
                   "train_epoch/E_CE": epoch_edge_loss,
                   "train_epoch/y_CE": epoch_y_loss}
+        if epoch is not None:
+            to_log['epoch'] = epoch
         if wandb.run:
             wandb.log(to_log, commit=False)
 
         return to_log
-
 
 

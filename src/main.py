@@ -327,12 +327,9 @@ def main(cfg: DictConfig):
         os.makedirs(ckpt_dir, exist_ok=True)
         checkpoint_callback = ModelCheckpoint(dirpath=ckpt_dir,
                                               filename='{epoch}',
-                                              monitor='val/epoch_NLL',
-                                              save_top_k=5,
-                                              mode='min',
+                                              save_top_k=-1,
+                                              save_last=True,
                                               every_n_epochs=1)
-        last_ckpt_save = ModelCheckpoint(dirpath=ckpt_dir, filename='last', every_n_epochs=1)
-        callbacks.append(last_ckpt_save)
         callbacks.append(checkpoint_callback)
 
     if cfg.train.ema_decay > 0:
