@@ -1,0 +1,21 @@
+{
+  "os": "macOS-26.3-arm64-arm-64bit",
+  "python": "CPython 3.9.23",
+  "startedAt": "2026-03-11T15:12:05.021240Z",
+  "args": [
+    "--config-name",
+    "config_barabasi_persisthomo_small",
+    "general.name=barabasi_small_persisthomo"
+  ],
+  "program": "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/main.py",
+  "codePath": "src/main.py",
+  "git": {
+    "remote": "https://github.com/abarrenap/CoPHo.git",
+    "commit": "578e7f5fe12a8c311d6bc84a55bf979d368d3b3d"
+  },
+  "email": "aimarbarrena@gmail.com",
+  "root": "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-11/16-11-54-barabasi_small_persisthomo",
+  "host": "MacBook-Air-de-Aimar-7.local",
+  "executable": "/opt/anaconda3/envs/copho/bin/python",
+  "writerId": "4lesa3ugx566p1q6fo5k8w5oyy8zm11c"
+}

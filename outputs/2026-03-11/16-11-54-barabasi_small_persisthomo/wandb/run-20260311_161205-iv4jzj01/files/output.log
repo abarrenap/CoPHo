@@ -1,0 +1,1367 @@
+Epoch 0: Val NLL 3049.60 -- Val Atom type KL 5.25 --  Val Edge type KL: 2222.13
+Val loss: 3049.6006 	 Best val loss:  3049.6006
+
+Starting train epoch...
+Loss: 3.6252548694610596
+Loss: 3.3128602504730225
+Loss: 3.5486395359039307
+Loss: 3.1763105392456055
+Loss: 3.01488995552063
+Loss: 2.9578146934509277
+Epoch 0: X_CE: 0.738 -- E_CE: 0.507 -- y_CE: -1.000 -- 1.8s
+Epoch 0: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.755510091781616
+Loss: 2.765089750289917
+Loss: 2.7852296829223633
+Loss: 2.4127731323242188
+Loss: 2.5941879749298096
+Loss: 2.522641658782959
+Epoch 1: Val NLL 2075.67 -- Val Atom type KL 5.53 --  Val Edge type KL: 1445.26
+Val loss: 2075.6687 	 Best val loss:  2075.6687
+
+Epoch 1: X_CE: 0.550 -- E_CE: 0.418 -- y_CE: -1.000 -- 2.1s
+Epoch 1: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.6418509483337402
+Loss: 2.6147027015686035
+Loss: 2.3833351135253906
+Loss: 2.6088790893554688
+Loss: 2.4572930335998535
+Loss: 2.1832072734832764
+Epoch 2: X_CE: 0.493 -- E_CE: 0.398 -- y_CE: -1.000 -- 1.6s
+Epoch 2: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.4437923431396484
+Loss: 2.5189194679260254
+Loss: 2.1827950477600098
+Loss: 2.349147081375122
+Loss: 2.3229660987854004
+Loss: 2.4219491481781006
+Epoch 3: Val NLL 2187.68 -- Val Atom type KL 6.81 --  Val Edge type KL: 1575.00
+Val loss: 2187.6819 	 Best val loss:  2075.6687
+
+Epoch 3: X_CE: 0.457 -- E_CE: 0.383 -- y_CE: -1.000 -- 2.7s
+Epoch 3: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.517996072769165
+Loss: 2.342658758163452
+Loss: 2.3265199661254883
+Loss: 2.168112277984619
+Loss: 2.303253173828125
+Loss: 2.5245299339294434
+Epoch 4: X_CE: 0.440 -- E_CE: 0.385 -- y_CE: -1.000 -- 2.3s
+Epoch 4: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.297168016433716
+Loss: 2.0583133697509766
+Loss: 2.3244898319244385
+Loss: 2.190387487411499
+Loss: 2.2036914825439453
+Loss: 2.329023838043213
+Epoch 5: Val NLL 1672.38 -- Val Atom type KL 5.89 --  Val Edge type KL: 1050.07
+Val loss: 1672.3754 	 Best val loss:  1672.3754
+
+[DEBUG] val torch.Size([32, 70])
+loaded /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/random_gin.pt
+GIN params loaded: 46/46
+
+Visualizing molecules...
+<class 'networkx.utils.decorators.argmap'> compilation 12:4: FutureWarning: normalized_laplacian_matrix will return a scipy.sparse array instead of a matrix in Networkx 3.0.
+/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/analysis/visualization.py:130: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  plt.tight_layout()
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/analysis/spectre_utils.py:613: FutureWarning: adjacency_matrix will return a scipy.sparse array instead of a matrix in Networkx 3.0.
+  adj = nx.adjacency_matrix(G).toarray()
+Computing all fractions...
+Sampling statistics {'degree': 0.032579211115596474, 'spectre': 0.02209093188202904, 'clustering': 0.0711826622440427, 'orbit': 0.4488809251076719, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 285.52 seconds
+
+Validation epoch end ends...
+Epoch 5: X_CE: 0.424 -- E_CE: 0.362 -- y_CE: -1.000 -- 288.4s
+Epoch 5: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.1355388164520264
+Loss: 2.1760761737823486
+Loss: 2.3363640308380127
+Loss: 2.188798427581787
+Loss: 2.416584014892578
+Loss: 2.1752681732177734
+Epoch 6: X_CE: 0.399 -- E_CE: 0.368 -- y_CE: -1.000 -- 3.7s
+Epoch 6: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.2326014041900635
+Loss: 2.2434158325195312
+Loss: 2.104576349258423
+Loss: 2.3308801651000977
+Loss: 2.269538402557373
+Loss: 2.192080020904541
+Epoch 7: Val NLL 1723.79 -- Val Atom type KL 6.88 --  Val Edge type KL: 1085.62
+Val loss: 1723.7877 	 Best val loss:  1672.3754
+
+Epoch 7: X_CE: 0.379 -- E_CE: 0.370 -- y_CE: -1.000 -- 3.7s
+Epoch 7: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.971426010131836
+Loss: 2.170045852661133
+Loss: 2.066558837890625
+Loss: 2.1056675910949707
+Loss: 2.1887881755828857
+Loss: 2.1948440074920654
+Epoch 8: X_CE: 0.359 -- E_CE: 0.352 -- y_CE: -1.000 -- 3.5s
+Epoch 8: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.080373525619507
+Loss: 2.1806278228759766
+Loss: 2.0038068294525146
+Loss: 2.3057353496551514
+Loss: 2.345320701599121
+Loss: 1.9726260900497437
+Epoch 9: Val NLL 1718.41 -- Val Atom type KL 7.89 --  Val Edge type KL: 1066.97
+Val loss: 1718.4120 	 Best val loss:  1672.3754
+
+Epoch 9: X_CE: 0.341 -- E_CE: 0.361 -- y_CE: -1.000 -- 2.5s
+Epoch 9: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.2132718563079834
+Loss: 2.15514874458313
+Loss: 2.1434848308563232
+Loss: 2.2367029190063477
+Loss: 2.1688780784606934
+Loss: 2.0841267108917236
+Epoch 10: X_CE: 0.327 -- E_CE: 0.368 -- y_CE: -1.000 -- 1.8s
+Epoch 10: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.2419698238372803
+Loss: 2.352379083633423
+Loss: 1.9594486951828003
+Loss: 2.128458023071289
+Loss: 1.8896647691726685
+Loss: 2.016577959060669
+Epoch 11: Val NLL 1954.39 -- Val Atom type KL 9.93 --  Val Edge type KL: 1292.16
+Val loss: 1954.3920 	 Best val loss:  1672.3754
+
+Epoch 11: X_CE: 0.317 -- E_CE: 0.356 -- y_CE: -1.000 -- 2.7s
+Epoch 11: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.045494794845581
+Loss: 2.221677303314209
+Loss: 2.116070508956909
+Loss: 2.229661226272583
+Loss: 1.9557223320007324
+Loss: 2.1354429721832275
+Epoch 12: X_CE: 0.307 -- E_CE: 0.362 -- y_CE: -1.000 -- 2.6s
+Epoch 12: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.033843994140625
+Loss: 2.0980448722839355
+Loss: 1.9347786903381348
+Loss: 2.136237382888794
+Loss: 2.040555715560913
+Loss: 2.062718391418457
+Epoch 13: Val NLL 1863.21 -- Val Atom type KL 8.49 --  Val Edge type KL: 1198.09
+Val loss: 1863.2109 	 Best val loss:  1672.3754
+
+[DEBUG] val torch.Size([32, 70])
+
+Visualizing molecules...
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+Computing all fractions...
+Sampling statistics {'degree': 0.13555373834435325, 'spectre': 0.045536035122758056, 'clustering': 0.13710780625661856, 'orbit': 0.5022281598050503, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 235.86 seconds
+
+Validation epoch end ends...
+Epoch 13: X_CE: 0.287 -- E_CE: 0.353 -- y_CE: -1.000 -- 238.3s
+Epoch 13: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.080617904663086
+Loss: 2.012265205383301
+Loss: 1.9757978916168213
+Loss: 2.1482458114624023
+Loss: 2.1024606227874756
+Loss: 2.240980386734009
+Epoch 14: X_CE: 0.278 -- E_CE: 0.363 -- y_CE: -1.000 -- 1.8s
+Epoch 14: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.042557716369629
+Loss: 2.039874792098999
+Loss: 2.0358543395996094
+Loss: 1.9279026985168457
+Loss: 1.9694769382476807
+Loss: 1.902307152748108
+Epoch 15: Val NLL 1740.24 -- Val Atom type KL 10.22 --  Val Edge type KL: 1074.88
+Val loss: 1740.2408 	 Best val loss:  1672.3754
+
+Epoch 15: X_CE: 0.272 -- E_CE: 0.343 -- y_CE: -1.000 -- 2.1s
+Epoch 15: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.1993632316589355
+Loss: 2.0879807472229004
+Loss: 1.9227930307388306
+Loss: 2.022277355194092
+Loss: 2.0252768993377686
+Loss: 1.9820947647094727
+Epoch 16: X_CE: 0.258 -- E_CE: 0.356 -- y_CE: -1.000 -- 1.7s
+Epoch 16: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.241328001022339
+Loss: 2.052649736404419
+Loss: 1.9623210430145264
+Loss: 2.016907215118408
+Loss: 1.8778905868530273
+Loss: 2.1126177310943604
+Epoch 17: Val NLL 1883.40 -- Val Atom type KL 12.08 --  Val Edge type KL: 1215.03
+Val loss: 1883.3990 	 Best val loss:  1672.3754
+
+Epoch 17: X_CE: 0.246 -- E_CE: 0.360 -- y_CE: -1.000 -- 2.8s
+Epoch 17: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.033837080001831
+Loss: 1.9508219957351685
+Loss: 1.9527947902679443
+Loss: 2.0198814868927
+Loss: 1.9308525323867798
+Loss: 2.0184226036071777
+Epoch 18: X_CE: 0.239 -- E_CE: 0.349 -- y_CE: -1.000 -- 2.2s
+Epoch 18: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.1266257762908936
+Loss: 2.1283650398254395
+Loss: 1.946211814880371
+Loss: 2.064049243927002
+Loss: 2.0278074741363525
+Loss: 1.9594941139221191
+Epoch 19: Val NLL 1695.41 -- Val Atom type KL 10.62 --  Val Edge type KL: 1027.93
+Val loss: 1695.4072 	 Best val loss:  1672.3754
+
+Epoch 19: X_CE: 0.230 -- E_CE: 0.362 -- y_CE: -1.000 -- 2.4s
+Epoch 19: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.9796875715255737
+Loss: 1.9541752338409424
+Loss: 1.9324878454208374
+Loss: 1.9398611783981323
+Loss: 2.068046808242798
+Loss: 2.0110650062561035
+Epoch 20: X_CE: 0.220 -- E_CE: 0.352 -- y_CE: -1.000 -- 2.0s
+Epoch 20: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8552894592285156
+Loss: 2.131267786026001
+Loss: 2.150566577911377
+Loss: 2.09531831741333
+Loss: 2.0533180236816406
+Loss: 2.0325050354003906
+Epoch 21: Val NLL 1850.75 -- Val Atom type KL 12.42 --  Val Edge type KL: 1177.77
+Val loss: 1850.7505 	 Best val loss:  1672.3754
+
+[DEBUG] val torch.Size([32, 70])
+
+Visualizing molecules...
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+Computing all fractions...
+Sampling statistics {'degree': 0.12266742972020683, 'spectre': 0.05042769231155453, 'clustering': 0.10538191613371128, 'orbit': 0.30535249687167065, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 210.44 seconds
+
+Validation epoch end ends...
+Epoch 21: X_CE: 0.210 -- E_CE: 0.369 -- y_CE: -1.000 -- 213.2s
+Epoch 21: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.9172537326812744
+Loss: 2.1002392768859863
+Loss: 1.9598596096038818
+Loss: 1.991796851158142
+Loss: 1.9449517726898193
+Loss: 1.9306455850601196
+Epoch 22: X_CE: 0.202 -- E_CE: 0.354 -- y_CE: -1.000 -- 1.7s
+Epoch 22: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.112572193145752
+Loss: 1.9613754749298096
+Loss: 1.9817326068878174
+Loss: 1.8734523057937622
+Loss: 2.033451795578003
+Loss: 1.8969894647598267
+Epoch 23: Val NLL 1637.33 -- Val Atom type KL 10.17 --  Val Edge type KL: 971.30
+Val loss: 1637.3253 	 Best val loss:  1637.3253
+
+Epoch 23: X_CE: 0.195 -- E_CE: 0.356 -- y_CE: -1.000 -- 2.5s
+Epoch 23: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.1045000553131104
+Loss: 2.03826642036438
+Loss: 1.9645788669586182
+Loss: 2.2449445724487305
+Loss: 1.9428397417068481
+Loss: 1.8265513181686401
+Epoch 24: X_CE: 0.190 -- E_CE: 0.366 -- y_CE: -1.000 -- 1.6s
+Epoch 24: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.890487551689148
+Loss: 1.9715126752853394
+Loss: 1.8641064167022705
+Loss: 1.8272625207901
+Loss: 1.8368237018585205
+Loss: 2.080369472503662
+Epoch 25: Val NLL 1884.51 -- Val Atom type KL 15.10 --  Val Edge type KL: 1210.16
+Val loss: 1884.5084 	 Best val loss:  1637.3253
+
+Epoch 25: X_CE: 0.180 -- E_CE: 0.346 -- y_CE: -1.000 -- 2.1s
+Epoch 25: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8163591623306274
+Loss: 1.9338501691818237
+Loss: 1.8495850563049316
+Loss: 2.123732328414917
+Loss: 1.932018518447876
+Loss: 1.9553184509277344
+Epoch 26: X_CE: 0.173 -- E_CE: 0.352 -- y_CE: -1.000 -- 1.7s
+Epoch 26: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.931604266166687
+Loss: 1.8180983066558838
+Loss: 1.8639802932739258
+Loss: 1.9690253734588623
+Loss: 1.9214073419570923
+Loss: 1.9797767400741577
+Epoch 27: Val NLL 1822.45 -- Val Atom type KL 14.12 --  Val Edge type KL: 1136.70
+Val loss: 1822.4545 	 Best val loss:  1637.3253
+
+Epoch 27: X_CE: 0.166 -- E_CE: 0.350 -- y_CE: -1.000 -- 2.3s
+Epoch 27: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8884549140930176
+Loss: 2.0325074195861816
+Loss: 1.9814165830612183
+Loss: 2.030095100402832
+Loss: 1.803165316581726
+Loss: 1.9850757122039795
+Epoch 28: X_CE: 0.157 -- E_CE: 0.359 -- y_CE: -1.000 -- 2.0s
+Epoch 28: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.874263048171997
+Loss: 1.9492791891098022
+Loss: 1.9268147945404053
+Loss: 1.9227601289749146
+Loss: 1.9273591041564941
+Loss: 1.9047547578811646
+Epoch 29: Val NLL 1665.89 -- Val Atom type KL 13.77 --  Val Edge type KL: 987.09
+Val loss: 1665.8934 	 Best val loss:  1637.3253
+
+[DEBUG] val torch.Size([32, 70])
+
+Visualizing molecules...
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+Computing all fractions...
+Sampling statistics {'degree': 0.10924744742028203, 'spectre': 0.04434595329549906, 'clustering': 0.10405925525609086, 'orbit': 0.24770978162613305, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 219.58 seconds
+
+Validation epoch end ends...
+Epoch 29: X_CE: 0.153 -- E_CE: 0.353 -- y_CE: -1.000 -- 221.8s
+Epoch 29: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.0371861457824707
+Loss: 1.916303277015686
+Loss: 1.88717520236969
+Loss: 2.217930555343628
+Loss: 1.9103080034255981
+Loss: 1.8489954471588135
+Epoch 30: X_CE: 0.146 -- E_CE: 0.365 -- y_CE: -1.000 -- 1.8s
+Epoch 30: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8377490043640137
+Loss: 1.8584998846054077
+Loss: 2.0184195041656494
+Loss: 1.7979679107666016
+Loss: 1.6940258741378784
+Loss: 2.0577571392059326
+Epoch 31: Val NLL 1559.75 -- Val Atom type KL 14.73 --  Val Edge type KL: 879.22
+Val loss: 1559.7460 	 Best val loss:  1559.7460
+
+Epoch 31: X_CE: 0.141 -- E_CE: 0.347 -- y_CE: -1.000 -- 2.1s
+Epoch 31: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.840185523033142
+Loss: 1.7572720050811768
+Loss: 1.936495304107666
+Loss: 1.9952350854873657
+Loss: 1.8678624629974365
+Loss: 2.040781259536743
+Epoch 32: X_CE: 0.133 -- E_CE: 0.355 -- y_CE: -1.000 -- 1.6s
+Epoch 32: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.006216049194336
+Loss: 1.9256699085235596
+Loss: 1.9571027755737305
+Loss: 1.7670780420303345
+Loss: 2.0330655574798584
+Loss: 1.9363328218460083
+Epoch 33: Val NLL 1873.32 -- Val Atom type KL 19.97 --  Val Edge type KL: 1170.63
+Val loss: 1873.3242 	 Best val loss:  1559.7460
+
+Epoch 33: X_CE: 0.129 -- E_CE: 0.362 -- y_CE: -1.000 -- 2.1s
+Epoch 33: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.761678695678711
+Loss: 1.9734429121017456
+Loss: 1.776797890663147
+Loss: 1.8658082485198975
+Loss: 1.824000597000122
+Loss: 1.8541468381881714
+Epoch 34: X_CE: 0.122 -- E_CE: 0.344 -- y_CE: -1.000 -- 1.6s
+Epoch 34: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.0300045013427734
+Loss: 1.8666421175003052
+Loss: 1.8112876415252686
+Loss: 1.9145138263702393
+Loss: 1.792945384979248
+Loss: 1.9948838949203491
+Epoch 35: Val NLL 1744.77 -- Val Atom type KL 19.65 --  Val Edge type KL: 1041.10
+Val loss: 1744.7676 	 Best val loss:  1559.7460
+
+Epoch 35: X_CE: 0.116 -- E_CE: 0.357 -- y_CE: -1.000 -- 2.2s
+Epoch 35: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.1829113960266113
+Loss: 1.745368242263794
+Loss: 1.8653424978256226
+Loss: 1.9088377952575684
+Loss: 1.9113638401031494
+Loss: 1.7693442106246948
+Epoch 36: X_CE: 0.114 -- E_CE: 0.357 -- y_CE: -1.000 -- 1.7s
+Epoch 36: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7921825647354126
+Loss: 1.6631391048431396
+Loss: 1.980074167251587
+Loss: 1.8520054817199707
+Loss: 2.006974935531616
+Loss: 1.88730788230896
+Epoch 37: Val NLL 1622.06 -- Val Atom type KL 16.55 --  Val Edge type KL: 935.92
+Val loss: 1622.0553 	 Best val loss:  1559.7460
+
+[DEBUG] val torch.Size([32, 70])
+
+Visualizing molecules...
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+Computing all fractions...
+Sampling statistics {'degree': 0.0740219220978513, 'spectre': 0.03981376530444414, 'clustering': 0.10279451095581364, 'orbit': 0.21094683345522958, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 205.24 seconds
+
+Validation epoch end ends...
+Epoch 37: X_CE: 0.109 -- E_CE: 0.351 -- y_CE: -1.000 -- 207.4s
+Epoch 37: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.0600297451019287
+Loss: 1.9138407707214355
+Loss: 2.0063364505767822
+Loss: 2.006199598312378
+Loss: 1.6325087547302246
+Loss: 1.80559504032135
+Epoch 38: X_CE: 0.104 -- E_CE: 0.360 -- y_CE: -1.000 -- 1.8s
+Epoch 38: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.901258111000061
+Loss: 2.03048038482666
+Loss: 1.8389934301376343
+Loss: 1.7641797065734863
+Loss: 1.87139093875885
+Loss: 1.7502238750457764
+Epoch 39: Val NLL 1954.77 -- Val Atom type KL 26.49 --  Val Edge type KL: 1247.99
+Val loss: 1954.7694 	 Best val loss:  1559.7460
+
+Epoch 39: X_CE: 0.101 -- E_CE: 0.352 -- y_CE: -1.000 -- 2.1s
+Epoch 39: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8727468252182007
+Loss: 1.8065502643585205
+Loss: 1.7426689863204956
+Loss: 1.8278801441192627
+Loss: 1.8676695823669434
+Loss: 1.9673329591751099
+Epoch 40: X_CE: 0.095 -- E_CE: 0.351 -- y_CE: -1.000 -- 1.5s
+Epoch 40: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7478995323181152
+Loss: 1.7886687517166138
+Loss: 1.7482107877731323
+Loss: 1.8404666185379028
+Loss: 2.008000373840332
+Loss: 1.921842098236084
+Epoch 41: Val NLL 1882.30 -- Val Atom type KL 21.63 --  Val Edge type KL: 1169.07
+Val loss: 1882.3047 	 Best val loss:  1559.7460
+
+Epoch 41: X_CE: 0.092 -- E_CE: 0.350 -- y_CE: -1.000 -- 2.0s
+Epoch 41: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.6848812103271484
+Loss: 1.8416796922683716
+Loss: 1.855961799621582
+Loss: 1.756964921951294
+Loss: 1.936978816986084
+Loss: 1.8974502086639404
+Epoch 42: X_CE: 0.088 -- E_CE: 0.348 -- y_CE: -1.000 -- 1.5s
+Epoch 42: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.836754560470581
+Loss: 2.1482362747192383
+Loss: 1.630444049835205
+Loss: 1.81887686252594
+Loss: 1.8511533737182617
+Loss: 1.8118561506271362
+Epoch 43: Val NLL 1761.90 -- Val Atom type KL 25.45 --  Val Edge type KL: 1047.21
+Val loss: 1761.8954 	 Best val loss:  1559.7460
+
+Epoch 43: X_CE: 0.084 -- E_CE: 0.353 -- y_CE: -1.000 -- 2.1s
+Epoch 43: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8588393926620483
+Loss: 1.6801806688308716
+Loss: 1.9746959209442139
+Loss: 2.0104660987854004
+Loss: 1.9307209253311157
+Loss: 1.682136058807373
+Epoch 44: X_CE: 0.081 -- E_CE: 0.355 -- y_CE: -1.000 -- 1.6s
+Epoch 44: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.9132535457611084
+Loss: 1.9482678174972534
+Loss: 1.792959213256836
+Loss: 1.9069818258285522
+Loss: 1.7587071657180786
+Loss: 1.7925342321395874
+Epoch 45: Val NLL 1929.49 -- Val Atom type KL 29.56 --  Val Edge type KL: 1206.01
+Val loss: 1929.4926 	 Best val loss:  1559.7460
+
+[DEBUG] val torch.Size([32, 70])
+
+Visualizing molecules...
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+Computing all fractions...
+Sampling statistics {'degree': 0.12006561155374151, 'spectre': 0.05680044855920818, 'clustering': 0.12893766525793035, 'orbit': 0.2573086207523047, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 202.36 seconds
+
+Validation epoch end ends...
+Epoch 45: X_CE: 0.078 -- E_CE: 0.355 -- y_CE: -1.000 -- 204.4s
+Epoch 45: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8722294569015503
+Loss: 1.7433769702911377
+Loss: 1.9284898042678833
+Loss: 1.8584136962890625
+Loss: 1.9455177783966064
+Loss: 2.029961347579956
+Epoch 46: X_CE: 0.074 -- E_CE: 0.365 -- y_CE: -1.000 -- 1.6s
+Epoch 46: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.6899582147598267
+Loss: 1.7894312143325806
+Loss: 1.7659640312194824
+Loss: 1.6091707944869995
+Loss: 1.8331818580627441
+Loss: 1.9606395959854126
+Epoch 47: Val NLL 2220.49 -- Val Atom type KL 31.45 --  Val Edge type KL: 1497.88
+Val loss: 2220.4902 	 Best val loss:  1559.7460
+
+Epoch 47: X_CE: 0.071 -- E_CE: 0.341 -- y_CE: -1.000 -- 2.0s
+Epoch 47: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8669853210449219
+Loss: 1.8830634355545044
+Loss: 1.8657605648040771
+Loss: 1.766173243522644
+Loss: 1.6672916412353516
+Loss: 1.8059172630310059
+Epoch 48: X_CE: 0.068 -- E_CE: 0.348 -- y_CE: -1.000 -- 1.6s
+Epoch 48: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8366106748580933
+Loss: 1.8227405548095703
+Loss: 1.7079676389694214
+Loss: 1.9076565504074097
+Loss: 1.920652985572815
+Loss: 1.6133934259414673
+Epoch 49: Val NLL 1932.68 -- Val Atom type KL 32.73 --  Val Edge type KL: 1201.30
+Val loss: 1932.6823 	 Best val loss:  1559.7460
+
+Epoch 49: X_CE: 0.065 -- E_CE: 0.347 -- y_CE: -1.000 -- 2.1s
+Epoch 49: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.709706425666809
+Loss: 1.9277448654174805
+Loss: 1.8595526218414307
+Loss: 1.860552430152893
+Loss: 1.8092749118804932
+Loss: 1.8795019388198853
+Epoch 50: X_CE: 0.063 -- E_CE: 0.356 -- y_CE: -1.000 -- 1.6s
+Epoch 50: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8154677152633667
+Loss: 1.8141087293624878
+Loss: 1.8280562162399292
+Loss: 1.877888560295105
+Loss: 1.9713282585144043
+Loss: 2.021252393722534
+Epoch 51: Val NLL 1713.83 -- Val Atom type KL 26.65 --  Val Edge type KL: 974.00
+Val loss: 1713.8287 	 Best val loss:  1559.7460
+
+Epoch 51: X_CE: 0.060 -- E_CE: 0.366 -- y_CE: -1.000 -- 3.1s
+Epoch 51: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7827016115188599
+Loss: 1.8537126779556274
+Loss: 1.9916338920593262
+Loss: 1.7589417695999146
+Loss: 1.896265983581543
+Loss: 1.9100909233093262
+Epoch 52: X_CE: 0.057 -- E_CE: 0.362 -- y_CE: -1.000 -- 1.5s
+Epoch 52: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7134546041488647
+Loss: 1.8233001232147217
+Loss: 1.9960181713104248
+Loss: 1.874884843826294
+Loss: 1.7595927715301514
+Loss: 1.8962565660476685
+Epoch 53: Val NLL 1520.61 -- Val Atom type KL 24.96 --  Val Edge type KL: 787.98
+Val loss: 1520.6127 	 Best val loss:  1520.6127
+
+[DEBUG] val torch.Size([32, 70])
+
+Visualizing molecules...
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+Computing all fractions...
+Sampling statistics {'degree': 0.09823525920954013, 'spectre': 0.05229969993633743, 'clustering': 0.11317357547846571, 'orbit': 0.251407573355816, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 200.86 seconds
+
+Validation epoch end ends...
+Epoch 53: X_CE: 0.055 -- E_CE: 0.358 -- y_CE: -1.000 -- 203.2s
+Epoch 53: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.0094242095947266
+Loss: 1.7082704305648804
+Loss: 1.788819432258606
+Loss: 1.8996047973632812
+Loss: 1.700992226600647
+Loss: 1.7042083740234375
+Epoch 54: X_CE: 0.053 -- E_CE: 0.350 -- y_CE: -1.000 -- 1.9s
+Epoch 54: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8176454305648804
+Loss: 1.8108744621276855
+Loss: 1.8164392709732056
+Loss: 1.80000901222229
+Loss: 1.8985400199890137
+Loss: 1.744889259338379
+Epoch 55: Val NLL 1801.69 -- Val Atom type KL 30.54 --  Val Edge type KL: 1062.91
+Val loss: 1801.6857 	 Best val loss:  1520.6127
+
+Epoch 55: X_CE: 0.051 -- E_CE: 0.353 -- y_CE: -1.000 -- 2.2s
+Epoch 55: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.028566598892212
+Loss: 1.791807770729065
+Loss: 1.8019182682037354
+Loss: 1.7236932516098022
+Loss: 1.8108456134796143
+Loss: 1.8831452131271362
+Epoch 56: X_CE: 0.049 -- E_CE: 0.358 -- y_CE: -1.000 -- 1.6s
+Epoch 56: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.776411533355713
+Loss: 1.8413963317871094
+Loss: 1.783245325088501
+Loss: 1.5994200706481934
+Loss: 1.6706764698028564
+Loss: 1.7600762844085693
+Epoch 57: Val NLL 1970.40 -- Val Atom type KL 38.13 --  Val Edge type KL: 1229.41
+Val loss: 1970.3960 	 Best val loss:  1520.6127
+
+Epoch 57: X_CE: 0.047 -- E_CE: 0.338 -- y_CE: -1.000 -- 2.1s
+Epoch 57: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.9131624698638916
+Loss: 1.8225431442260742
+Loss: 1.6768691539764404
+Loss: 1.8803764581680298
+Loss: 1.8606884479522705
+Loss: 1.867876648902893
+Epoch 58: X_CE: 0.046 -- E_CE: 0.358 -- y_CE: -1.000 -- 1.6s
+Epoch 58: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7691230773925781
+Loss: 1.9301422834396362
+Loss: 1.7450858354568481
+Loss: 1.8717385530471802
+Loss: 1.7337592840194702
+Loss: 1.77842378616333
+Epoch 59: Val NLL 1754.72 -- Val Atom type KL 31.79 --  Val Edge type KL: 998.62
+Val loss: 1754.7173 	 Best val loss:  1520.6127
+
+Epoch 59: X_CE: 0.044 -- E_CE: 0.352 -- y_CE: -1.000 -- 2.2s
+Epoch 59: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.9699796438217163
+Loss: 1.954900860786438
+Loss: 1.7440063953399658
+Loss: 1.8569061756134033
+Loss: 1.784845232963562
+Loss: 1.6266851425170898
+Epoch 60: X_CE: 0.042 -- E_CE: 0.356 -- y_CE: -1.000 -- 1.7s
+Epoch 60: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7341299057006836
+Loss: 1.618582010269165
+Loss: 1.750183343887329
+Loss: 1.9366406202316284
+Loss: 1.9239368438720703
+Loss: 1.8229169845581055
+Epoch 61: Val NLL 1867.49 -- Val Atom type KL 40.42 --  Val Edge type KL: 1108.99
+Val loss: 1867.4918 	 Best val loss:  1520.6127
+
+[DEBUG] val torch.Size([32, 70])
+
+Visualizing molecules...
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+Computing all fractions...
+Sampling statistics {'degree': 0.09476086713118437, 'spectre': 0.05088452189197734, 'clustering': 0.13143649932845472, 'orbit': 0.25529080714746466, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 212.51 seconds
+
+Validation epoch end ends...
+Epoch 61: X_CE: 0.041 -- E_CE: 0.351 -- y_CE: -1.000 -- 214.6s
+Epoch 61: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7981698513031006
+Loss: 1.891386866569519
+Loss: 1.8202157020568848
+Loss: 1.8423824310302734
+Loss: 1.8193200826644897
+Loss: 1.7813498973846436
+Epoch 62: X_CE: 0.039 -- E_CE: 0.357 -- y_CE: -1.000 -- 1.6s
+Epoch 62: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7139955759048462
+Loss: 1.6920878887176514
+Loss: 1.7832043170928955
+Loss: 1.7601970434188843
+Loss: 1.8129000663757324
+Loss: 1.8161333799362183
+Epoch 63: Val NLL 1873.16 -- Val Atom type KL 40.62 --  Val Edge type KL: 1115.43
+Val loss: 1873.1553 	 Best val loss:  1520.6127
+
+Epoch 63: X_CE: 0.037 -- E_CE: 0.345 -- y_CE: -1.000 -- 2.1s
+Epoch 63: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.6542840003967285
+Loss: 1.8673925399780273
+Loss: 1.7550493478775024
+Loss: 1.8050333261489868
+Loss: 1.8501262664794922
+Loss: 1.6867337226867676
+Epoch 64: X_CE: 0.036 -- E_CE: 0.347 -- y_CE: -1.000 -- 1.7s
+Epoch 64: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.5759122371673584
+Loss: 1.8579601049423218
+Loss: 1.817826271057129
+Loss: 1.8201061487197876
+Loss: 1.869455337524414
+Loss: 1.9393607378005981
+Epoch 65: Val NLL 2000.13 -- Val Atom type KL 48.03 --  Val Edge type KL: 1223.29
+Val loss: 2000.1305 	 Best val loss:  1520.6127
+
+Epoch 65: X_CE: 0.035 -- E_CE: 0.356 -- y_CE: -1.000 -- 2.1s
+Epoch 65: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.6373348236083984
+Loss: 1.7530661821365356
+Loss: 1.83065927028656
+Loss: 1.8175203800201416
+Loss: 1.9281158447265625
+Loss: 1.6633996963500977
+Epoch 66: X_CE: 0.033 -- E_CE: 0.348 -- y_CE: -1.000 -- 1.6s
+Epoch 66: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.9345543384552002
+Loss: 1.727679967880249
+Loss: 1.7639871835708618
+Loss: 1.9880348443984985
+Loss: 1.553579568862915
+Loss: 1.849707007408142
+Epoch 67: Val NLL 1944.04 -- Val Atom type KL 33.75 --  Val Edge type KL: 1181.54
+Val loss: 1944.0394 	 Best val loss:  1520.6127
+
+Epoch 67: X_CE: 0.032 -- E_CE: 0.354 -- y_CE: -1.000 -- 2.1s
+Epoch 67: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.9015295505523682
+Loss: 1.738956332206726
+Loss: 1.712520956993103
+Loss: 1.852494478225708
+Loss: 1.6459684371948242
+Loss: 1.8290590047836304
+Epoch 68: X_CE: 0.031 -- E_CE: 0.350 -- y_CE: -1.000 -- 1.6s
+Epoch 68: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7957409620285034
+Loss: 1.7022250890731812
+Loss: 1.7865562438964844
+Loss: 1.798883318901062
+Loss: 1.8731175661087036
+Loss: 1.776400089263916
+Epoch 69: Val NLL 2056.22 -- Val Atom type KL 51.89 --  Val Edge type KL: 1277.27
+Val loss: 2056.2214 	 Best val loss:  1520.6127
+
+[DEBUG] val torch.Size([32, 70])
+
+Visualizing molecules...
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+Computing all fractions...
+Sampling statistics {'degree': 0.09678392129850111, 'spectre': 0.04607910334091958, 'clustering': 0.11982766591841107, 'orbit': 0.2332131416787388, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 198.83 seconds
+
+Validation epoch end ends...
+Epoch 69: X_CE: 0.030 -- E_CE: 0.352 -- y_CE: -1.000 -- 201.8s
+Epoch 69: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.837131142616272
+Loss: 1.875279426574707
+Loss: 1.9253922700881958
+Loss: 1.7536816596984863
+Loss: 1.8068026304244995
+Loss: 1.798677921295166
+Epoch 70: X_CE: 0.030 -- E_CE: 0.361 -- y_CE: -1.000 -- 1.6s
+Epoch 70: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8317302465438843
+Loss: 1.8134982585906982
+Loss: 1.8414554595947266
+Loss: 1.8951894044876099
+Loss: 1.7372525930404663
+Loss: 1.771578073501587
+Epoch 71: Val NLL 1919.08 -- Val Atom type KL 46.02 --  Val Edge type KL: 1138.65
+Val loss: 1919.0763 	 Best val loss:  1520.6127
+
+Epoch 71: X_CE: 0.028 -- E_CE: 0.357 -- y_CE: -1.000 -- 2.2s
+Epoch 71: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.6121255159378052
+Loss: 1.7566295862197876
+Loss: 1.8714326620101929
+Loss: 1.779909610748291
+Loss: 1.7019339799880981
+Loss: 1.7757619619369507
+Epoch 72: X_CE: 0.027 -- E_CE: 0.344 -- y_CE: -1.000 -- 1.5s
+Epoch 72: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.698039174079895
+Loss: 1.7300217151641846
+Loss: 1.8222408294677734
+Loss: 1.761279821395874
+Loss: 1.7273995876312256
+Loss: 1.7340296506881714
+Epoch 73: Val NLL 2038.45 -- Val Atom type KL 53.40 --  Val Edge type KL: 1249.68
+Val loss: 2038.4469 	 Best val loss:  1520.6127
+
+Epoch 73: X_CE: 0.026 -- E_CE: 0.344 -- y_CE: -1.000 -- 2.1s
+Epoch 73: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.805842638015747
+Loss: 1.8457430601119995
+Loss: 2.0678579807281494
+Loss: 1.806923270225525
+Loss: 1.7120797634124756
+Loss: 1.8564435243606567
+Epoch 74: X_CE: 0.026 -- E_CE: 0.365 -- y_CE: -1.000 -- 1.6s
+Epoch 74: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.837117075920105
+Loss: 1.6832388639450073
+Loss: 2.0137484073638916
+Loss: 1.6832876205444336
+Loss: 1.7422107458114624
+Loss: 1.6792410612106323
+Epoch 75: Val NLL 1984.69 -- Val Atom type KL 48.00 --  Val Edge type KL: 1200.82
+Val loss: 1984.6862 	 Best val loss:  1520.6127
+
+Epoch 75: X_CE: 0.025 -- E_CE: 0.350 -- y_CE: -1.000 -- 2.1s
+Epoch 75: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8372478485107422
+Loss: 1.9490537643432617
+Loss: 1.6568278074264526
+Loss: 1.7466044425964355
+Loss: 1.7966861724853516
+Loss: 1.675204873085022
+Epoch 76: X_CE: 0.024 -- E_CE: 0.351 -- y_CE: -1.000 -- 1.7s
+Epoch 76: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7640336751937866
+Loss: 1.781436800956726
+Loss: 1.900172233581543
+Loss: 1.7840656042099
+Loss: 1.6825565099716187
+Loss: 1.7417033910751343
+Epoch 77: Val NLL 2050.82 -- Val Atom type KL 50.83 --  Val Edge type KL: 1253.34
+Val loss: 2050.8157 	 Best val loss:  1520.6127
+
+[DEBUG] val torch.Size([32, 70])
+
+Visualizing molecules...
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+Computing all fractions...
+Sampling statistics {'degree': 0.1223799731383246, 'spectre': 0.06046357125959578, 'clustering': 0.14715345166650406, 'orbit': 0.2647220581918882, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 204.39 seconds
+
+Validation epoch end ends...
+Epoch 77: X_CE: 0.023 -- E_CE: 0.350 -- y_CE: -1.000 -- 206.6s
+Epoch 77: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7465921640396118
+Loss: 1.982864260673523
+Loss: 1.7126585245132446
+Loss: 1.730476975440979
+Loss: 1.7893776893615723
+Loss: 1.9039350748062134
+Epoch 78: X_CE: 0.023 -- E_CE: 0.358 -- y_CE: -1.000 -- 1.8s
+Epoch 78: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.9202754497528076
+Loss: 1.7780940532684326
+Loss: 1.731491208076477
+Loss: 1.886980652809143
+Loss: 1.7202576398849487
+Loss: 1.4729952812194824
+Epoch 79: Val NLL 2098.39 -- Val Atom type KL 57.61 --  Val Edge type KL: 1296.56
+Val loss: 2098.3918 	 Best val loss:  1520.6127
+
+Epoch 79: X_CE: 0.022 -- E_CE: 0.346 -- y_CE: -1.000 -- 2.4s
+Epoch 79: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8015062808990479
+Loss: 1.7549240589141846
+Loss: 1.8644590377807617
+Loss: 2.0133912563323975
+Loss: 1.7164628505706787
+Loss: 1.8193788528442383
+Epoch 80: X_CE: 0.021 -- E_CE: 0.361 -- y_CE: -1.000 -- 1.6s
+Epoch 80: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.6959401369094849
+Loss: 1.763816475868225
+Loss: 1.9007495641708374
+Loss: 1.8682297468185425
+Loss: 1.6220154762268066
+Loss: 1.9600863456726074
+Epoch 81: Val NLL 1858.35 -- Val Atom type KL 51.15 --  Val Edge type KL: 1055.82
+Val loss: 1858.3478 	 Best val loss:  1520.6127
+
+Epoch 81: X_CE: 0.020 -- E_CE: 0.356 -- y_CE: -1.000 -- 2.1s
+Epoch 81: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7230985164642334
+Loss: 1.9122554063796997
+Loss: 1.7224524021148682
+Loss: 1.7111486196517944
+Loss: 1.8060451745986938
+Loss: 1.6773227453231812
+Epoch 82: X_CE: 0.020 -- E_CE: 0.348 -- y_CE: -1.000 -- 1.8s
+Epoch 82: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.565499186515808
+Loss: 1.7195336818695068
+Loss: 1.8584104776382446
+Loss: 1.7237993478775024
+Loss: 1.7648427486419678
+Loss: 1.7667133808135986
+Epoch 83: Val NLL 2033.66 -- Val Atom type KL 56.63 --  Val Edge type KL: 1231.60
+Val loss: 2033.6632 	 Best val loss:  1520.6127
+
+Epoch 83: X_CE: 0.020 -- E_CE: 0.343 -- y_CE: -1.000 -- 2.2s
+Epoch 83: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8604052066802979
+Loss: 1.777720332145691
+Loss: 1.8169658184051514
+Loss: 1.8139384984970093
+Loss: 1.8001632690429688
+Loss: 1.8853082656860352
+Epoch 84: X_CE: 0.019 -- E_CE: 0.361 -- y_CE: -1.000 -- 1.6s
+Epoch 84: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.6645885705947876
+Loss: 1.9206669330596924
+Loss: 1.7358285188674927
+Loss: 1.8774259090423584
+Loss: 1.747165322303772
+Loss: 1.7605609893798828
+Epoch 85: Val NLL 2039.60 -- Val Atom type KL 60.83 --  Val Edge type KL: 1228.17
+Val loss: 2039.5975 	 Best val loss:  1520.6127
+
+[DEBUG] val torch.Size([32, 70])
+
+Visualizing molecules...
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+Computing all fractions...
+Sampling statistics {'degree': 0.11120423931073353, 'spectre': 0.059374732291993526, 'clustering': 0.1373107858864287, 'orbit': 0.26065883215122426, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 195.20 seconds
+
+Validation epoch end ends...
+Epoch 85: X_CE: 0.018 -- E_CE: 0.353 -- y_CE: -1.000 -- 197.3s
+Epoch 85: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.711283564567566
+Loss: 1.869936466217041
+Loss: 1.808130145072937
+Loss: 1.7876542806625366
+Loss: 1.858762502670288
+Loss: 1.8739768266677856
+Epoch 86: X_CE: 0.018 -- E_CE: 0.360 -- y_CE: -1.000 -- 1.8s
+Epoch 86: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.8932973146438599
+Loss: 1.9171226024627686
+Loss: 1.6812583208084106
+Loss: 1.7694896459579468
+Loss: 1.5318539142608643
+Loss: 1.932375431060791
+Epoch 87: Val NLL 2241.54 -- Val Atom type KL 68.37 --  Val Edge type KL: 1416.10
+Val loss: 2241.5427 	 Best val loss:  1520.6127
+
+Epoch 87: X_CE: 0.017 -- E_CE: 0.354 -- y_CE: -1.000 -- 2.6s
+Epoch 87: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.668179988861084
+Loss: 1.7608383893966675
+Loss: 1.8398332595825195
+Loss: 1.7214140892028809
+Loss: 1.8545794486999512
+Loss: 1.6794402599334717
+Epoch 88: X_CE: 0.017 -- E_CE: 0.347 -- y_CE: -1.000 -- 1.9s
+Epoch 88: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.788126826286316
+Loss: 1.687570333480835
+Loss: 1.819213628768921
+Loss: 1.684299111366272
+Loss: 2.0992534160614014
+Loss: 1.4823150634765625
+Epoch 89: Val NLL 2123.23 -- Val Atom type KL 63.84 --  Val Edge type KL: 1304.60
+Val loss: 2123.2273 	 Best val loss:  1520.6127
+
+Epoch 89: X_CE: 0.017 -- E_CE: 0.349 -- y_CE: -1.000 -- 2.5s
+Epoch 89: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7050310373306274
+Loss: 2.051504611968994
+Loss: 1.8293386697769165
+Loss: 1.9109030961990356
+Loss: 1.5522915124893188
+Loss: 1.87848699092865
+Epoch 90: X_CE: 0.016 -- E_CE: 0.361 -- y_CE: -1.000 -- 2.0s
+Epoch 90: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.770628809928894
+Loss: 1.6762696504592896
+Loss: 1.7074754238128662
+Loss: 1.6747418642044067
+Loss: 1.7426576614379883
+Loss: 1.7856100797653198
+Epoch 91: Val NLL 1856.42 -- Val Atom type KL 54.21 --  Val Edge type KL: 1052.03
+Val loss: 1856.4160 	 Best val loss:  1520.6127
+
+Epoch 91: X_CE: 0.015 -- E_CE: 0.342 -- y_CE: -1.000 -- 2.1s
+Epoch 91: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.9224064350128174
+Loss: 1.7302849292755127
+Loss: 1.7696561813354492
+Loss: 1.7558132410049438
+Loss: 1.864931583404541
+Loss: 1.934403419494629
+Epoch 92: X_CE: 0.015 -- E_CE: 0.363 -- y_CE: -1.000 -- 1.7s
+Epoch 92: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7877830266952515
+Loss: 1.8806174993515015
+Loss: 1.9096894264221191
+Loss: 1.7486169338226318
+Loss: 1.7877193689346313
+Loss: 1.6698191165924072
+Epoch 93: Val NLL 1886.57 -- Val Atom type KL 53.64 --  Val Edge type KL: 1067.42
+Val loss: 1886.5703 	 Best val loss:  1520.6127
+
+[DEBUG] val torch.Size([32, 70])
+
+Visualizing molecules...
+Done.
+Computing sampling metrics...
+Computing sampling metrics between 32 generated graphs and 48 test graphs -- emd computation: False
+Building networkx graphs...
+Computing degree stats..
+Computing spectre stats...
+Computing clustering stats...
+Computing orbit stats...
+Computing accuracy...
+Computing all fractions...
+Sampling statistics {'degree': 0.13477202195785942, 'spectre': 0.06524249515043756, 'clustering': 0.1654289417928547, 'orbit': 0.27575491915625927, 'sbm_acc': 0.0, 'sampling/frac_unique': 1.0, 'sampling/frac_unique_non_iso': 1.0, 'sampling/frac_unic_non_iso_valid': 0.0, 'sampling/frac_non_iso': 1.0}
+Done. Sampling took 239.94 seconds
+
+Validation epoch end ends...
+Epoch 93: X_CE: 0.015 -- E_CE: 0.357 -- y_CE: -1.000 -- 242.1s
+Epoch 93: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.54544198513031
+Loss: 1.6618049144744873
+Loss: 1.9077818393707275
+Loss: 1.7464654445648193
+Loss: 1.9262633323669434
+Loss: 1.7623401880264282
+Epoch 94: X_CE: 0.014 -- E_CE: 0.349 -- y_CE: -1.000 -- 1.6s
+Epoch 94: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 2.029801845550537
+Loss: 1.8763084411621094
+Loss: 1.801492691040039
+Loss: 1.7747021913528442
+Loss: 1.7333073616027832
+Loss: 1.7266883850097656
+Epoch 95: Val NLL 1865.86 -- Val Atom type KL 70.23 --  Val Edge type KL: 1021.63
+Val loss: 1865.8649 	 Best val loss:  1520.6127
+
+Epoch 95: X_CE: 0.014 -- E_CE: 0.362 -- y_CE: -1.000 -- 2.1s
+Epoch 95: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.812394380569458
+Loss: 1.9568111896514893
+Loss: 1.8019052743911743
+Loss: 1.6302822828292847
+Loss: 1.8526289463043213
+Loss: 1.7611125707626343
+Epoch 96: X_CE: 0.014 -- E_CE: 0.358 -- y_CE: -1.000 -- 1.6s
+Epoch 96: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.6053656339645386
+Loss: 1.714307427406311
+Loss: 1.7987197637557983
+Loss: 1.7145856618881226
+Loss: 1.8580915927886963
+Loss: 1.8284897804260254
+Epoch 97: Val NLL 2041.52 -- Val Atom type KL 73.65 --  Val Edge type KL: 1205.68
+Val loss: 2041.5160 	 Best val loss:  1520.6127
+
+Epoch 97: X_CE: 0.013 -- E_CE: 0.348 -- y_CE: -1.000 -- 2.1s
+Epoch 97: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.7975534200668335
+Loss: 1.9184666872024536
+Loss: 1.6252936124801636
+Loss: 1.8189895153045654
+Loss: 1.8255655765533447
+Loss: 1.8132175207138062
+Epoch 98: X_CE: 0.013 -- E_CE: 0.357 -- y_CE: -1.000 -- 1.6s
+Epoch 98: None -- None
+CUDA is not available. Skipping memory summary.
+Starting train epoch...
+Loss: 1.9014166593551636
+Loss: 1.8589982986450195
+Loss: 1.7935484647750854
+Loss: 1.890274167060852
+Loss: 1.763665795326233
+Loss: 1.793121576309204
+Epoch 99: Val NLL 2095.88 -- Val Atom type KL 73.22 --  Val Edge type KL: 1249.52
+Val loss: 2095.8777 	 Best val loss:  1520.6127
+
+Epoch 99: X_CE: 0.013 -- E_CE: 0.364 -- y_CE: -1.000 -- 2.1s
+Epoch 99: None -- None
+CUDA is not available. Skipping memory summary.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Starting test...
+[34m[1mwandb[0m: Finishing previous runs because reinit is set to True.

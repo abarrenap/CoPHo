@@ -209,6 +209,12 @@ def build_model(cfg, model_kwargs, checkpoint_path: str, guidance_path: Optional
         else:
             print(f"[WARNING] Guidance model not found: {guidance_model_path}")
 
+    # Safety guard: avoid runtime crashes when the config enables conditioning
+    # but no guidance model has been attached (e.g., unconditional generation).
+    if bool(getattr(model, "enable_condition", False)) and getattr(model, "guidance_model", None) is None:
+        print("[WARNING] Conditioning is enabled but no guidance model is loaded. Disabling conditioning for this run.")
+        model.enable_condition = False
+
     return model
 
 

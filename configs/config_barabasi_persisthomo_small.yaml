@@ -1,0 +1,12 @@
+defaults:
+    - _self_
+    - general: general_default_mis
+    - model: discrete_mis_persisthomo_small
+    - train: train_default_mis
+    - dataset: barabasi
+
+hydra:
+  job:
+    chdir: True
+  run:
+    dir: ../outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}-${general.name}
