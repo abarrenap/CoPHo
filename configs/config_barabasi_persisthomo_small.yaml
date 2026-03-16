@@ -2,7 +2,7 @@ defaults:
     - _self_
     - general: general_default_mis
     - model: discrete_mis_persisthomo_small
-    - train: train_default_mis
+    - train: train_default_mis_small
     - dataset: barabasi
 
 hydra:

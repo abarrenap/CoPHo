@@ -74,7 +74,8 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                                       hidden_dims=cfg.model.hidden_dims,
                                       output_dims=output_dims,
                                       act_fn_in=nn.ReLU(),
-                                      act_fn_out=nn.ReLU())
+                                      act_fn_out=nn.ReLU(),
+                                      dropout=cfg.model.get('dropout', 0.1))
 
         self.save_hyperparameters()
 

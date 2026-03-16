@@ -1,0 +1,4 @@
+- general.name=barabasi_small_persisthomo
+- general.resume=/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-11/21-17-15-barabasi_small_persisthomo/checkpoints/barabasi_small_persisthomo/last.ckpt
+- train.n_epochs=200
+- general.wandb_run_id=ps6643bk

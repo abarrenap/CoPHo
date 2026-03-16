@@ -1,0 +1,58 @@
+2026-03-11 22:46:38,196 INFO    MainThread:12238 [wandb_setup.py:_flush():81] Current SDK version is 0.25.0
+2026-03-11 22:46:38,197 INFO    MainThread:12238 [wandb_setup.py:_flush():81] Configure stats pid to 12238
+2026-03-11 22:46:38,197 INFO    MainThread:12238 [wandb_setup.py:_flush():81] Loading settings from environment variables
+2026-03-11 22:46:38,197 INFO    MainThread:12238 [wandb_init.py:setup_run_log_directory():717] Logging user logs to /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-11/21-17-15-barabasi_small_persisthomo/wandb/run-20260311_224638-glfwu3s9/logs/debug.log
+2026-03-11 22:46:38,197 INFO    MainThread:12238 [wandb_init.py:setup_run_log_directory():718] Logging internal logs to /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-11/21-17-15-barabasi_small_persisthomo/wandb/run-20260311_224638-glfwu3s9/logs/debug-internal.log
+2026-03-11 22:46:38,197 INFO    MainThread:12238 [wandb_init.py:init():844] calling init triggers
+2026-03-11 22:46:38,198 INFO    MainThread:12238 [wandb_init.py:init():849] wandb.init called with sweep_config: {}
+config: {'general': {'name': 'barabasi_small_persisthomo_resume', 'wandb': 'online', 'gpus': 1, 'resume': '/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-11/21-17-15-barabasi_small_persisthomo/checkpoints/barabasi_small_persisthomo/last.ckpt', 'test_only': None, 'guidance_path': '/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_community.pth', 'check_val_every_n_epochs': 2, 'sample_every_val': 4, 'val_check_interval': None, 'samples_to_generate': 32, 'samples_to_save': 4, 'chains_to_save': 0, 'log_every_steps': 50, 'number_chain_steps': 0, 'final_model_samples_to_generate': 100, 'final_model_samples_to_save': 100, 'final_model_chains_to_save': 0, 'evaluate_all_checkpoints': False}, 'model': {'type': 'discrete', 'use_persist_homo': True, 'extra_features': None, 'transition': 'uniform', 'model': 'graph_tf', 'diffusion_steps': 1000, 'diffusion_noise_schedule': 'cosine', 'n_layers': 3, 'hidden_mlp_dims': {'X': 16, 'E': 16, 'y': 16}, 'hidden_dims': {'dx': 16, 'de': 16, 'dy': 16, 'n_head': 2, 'dim_ffX': 16, 'dim_ffE': 16, 'dim_ffy': 16}, 'lambda_train': [5, 0]}, 'train': {'n_epochs': 200, 'batch_size': 32, 'lr': 0.0002, 'clip_grad': None, 'save_model': True, 'num_workers': 0, 'ema_decay': 0, 'progress_bar': True, 'weight_decay': 1e-12, 'optimizer': 'adamw', 'seed': 0}, 'dataset': {'name': 'mis', 'remove_h': None, 'datadir': '/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/barabasi/'}, '_wandb': {}}
+2026-03-11 22:46:38,198 INFO    MainThread:12238 [wandb_init.py:init():892] starting backend
+2026-03-11 22:46:38,461 INFO    MainThread:12238 [wandb_init.py:init():895] sending inform_init request
+2026-03-11 22:46:38,480 INFO    MainThread:12238 [wandb_init.py:init():903] backend started and connected
+2026-03-11 22:46:38,490 INFO    MainThread:12238 [wandb_init.py:init():973] updated telemetry
+2026-03-11 22:46:38,508 INFO    MainThread:12238 [wandb_init.py:init():997] communicating run to backend with 90.0 second timeout
+2026-03-11 22:46:56,163 INFO    MainThread:12238 [wandb_init.py:init():1042] starting run threads in backend
+2026-03-11 22:46:56,313 INFO    MainThread:12238 [wandb_run.py:_console_start():2524] atexit reg
+2026-03-11 22:46:56,313 INFO    MainThread:12238 [wandb_run.py:_redirect():2373] redirect: wrap_raw
+2026-03-11 22:46:56,314 INFO    MainThread:12238 [wandb_run.py:_redirect():2442] Wrapping output streams.
+2026-03-11 22:46:56,314 INFO    MainThread:12238 [wandb_run.py:_redirect():2465] Redirects installed.
+2026-03-11 22:46:56,319 INFO    MainThread:12238 [wandb_init.py:init():1082] run started, returning control to user process
+2026-03-11 22:57:28,463 INFO    MainThread:12238 [wandb_run.py:_finish():2291] finishing run aimarbarrena-upv-ehu/graph_ddm_mis/glfwu3s9
+2026-03-11 22:57:28,464 INFO    MainThread:12238 [wandb_run.py:_atexit_cleanup():2490] got exitcode: 0
+2026-03-11 22:57:28,465 INFO    MainThread:12238 [wandb_run.py:_restore():2472] restore
+2026-03-11 22:57:28,465 INFO    MainThread:12238 [wandb_run.py:_restore():2478] restore done
+2026-03-11 22:57:29,480 WARNING MainThread:12238 [wandb_init.py:init():1587] [no run ID] interrupted
+Traceback (most recent call last):
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 1578, in init
+    run = wi.init(run_settings, run_config, run_printer)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_init.py", line 865, in init
+    self._wl.finish_all_active_runs()
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_setup.py", line 166, in finish_all_active_runs
+    run.finish()
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 399, in wrapper
+    return func(self, *args, **kwargs)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 444, in wrapper
+    return func(self, *args, **kwargs)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2279, in finish
+    return self._finish(exit_code)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 399, in wrapper
+    return func(self, *args, **kwargs)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2307, in _finish
+    self._atexit_cleanup(exit_code=exit_code)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2501, in _atexit_cleanup
+    self._on_finish()
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/wandb_run.py", line 2725, in _on_finish
+    wait_with_progress(
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/mailbox/wait_with_progress.py", line 24, in wait_with_progress
+    return wait_all_with_progress(
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/mailbox/wait_with_progress.py", line 78, in wait_all_with_progress
+    return asyncer.run(progress_loop_with_timeout)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/site-packages/wandb/sdk/lib/asyncio_manager.py", line 137, in run
+    return future.result()
+  File "/opt/anaconda3/envs/copho/lib/python3.9/concurrent/futures/_base.py", line 441, in result
+    self._condition.wait(timeout)
+  File "/opt/anaconda3/envs/copho/lib/python3.9/threading.py", line 312, in wait
+    waiter.acquire()
+KeyboardInterrupt
+2026-03-11 22:57:29,506 INFO    wandb-AsyncioManager-main:12238 [service_client.py:_forward_responses():134] Reached EOF.
+2026-03-11 22:57:29,506 INFO    wandb-AsyncioManager-main:12238 [mailbox.py:close():155] Closing mailbox, abandoning 2 handles.

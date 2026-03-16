@@ -1,0 +1,12 @@
+# Training settings for smaller MIS models
+n_epochs: 100
+batch_size: 64
+lr: 0.00003
+clip_grad: 0.5
+save_model: True
+num_workers: 0
+ema_decay: 0           # EMA callback is not available in this repository
+progress_bar: True
+weight_decay: 1e-6
+optimizer: adamw # adamw,nadamw,nadam => nadamw for large batches, see http://arxiv.org/abs/2102.06356 for the use of nesterov momentum with large batches
+seed: 0

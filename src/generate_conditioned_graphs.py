@@ -353,10 +353,10 @@ def generate_conditioned_graphs(checkpoint_path: str,
 
 
 if __name__ == "__main__":
-    checkpoint = "/users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-10/08-54-52-barabasi_exp1/checkpoints/barabasi_exp1/epoch=45.ckpt"
+    checkpoint = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-11/21-17-15-barabasi_small_persisthomo/checkpoints/barabasi_small_persisthomo/epoch=79.ckpt"
     graphs = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/barabasi/raw/test_32.txt"
 
-    output = "../generated/45.txt"
+    output = "../generated/small_best_metrics.txt"
     guidance = '/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_community.pth'
     device = "cpu"
     per_embedding = 1

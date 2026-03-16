@@ -1,4 +1,5 @@
 import os
+import re
 import torch_geometric.utils
 from omegaconf import OmegaConf, open_dict
 from torch_geometric.utils import to_dense_adj, to_dense_batch
@@ -132,12 +133,85 @@ class PlaceHolder:
 
 
 def setup_wandb(cfg):
+    if wandb.run is not None:
+        return
+
     config_dict = omegaconf.OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True)
     kwargs = {'name': cfg.general.name, 'project': f'graph_ddm_{cfg.dataset.name}', 'config': config_dict,
-              'settings': wandb.Settings(_disable_stats=True), 'reinit': True, 'mode': cfg.general.wandb}
+              'settings': wandb.Settings(_disable_stats=True), 'reinit': 'return_previous', 'mode': cfg.general.wandb}
+
+    configured_run_id = cfg.general.get('wandb_run_id', None) if hasattr(cfg.general, 'get') else None
+    run_id = configured_run_id
+    is_resumed_execution = cfg.general.get('resume', None) is not None or cfg.general.get('test_only', None) is not None
+
+    if run_id is None and is_resumed_execution:
+        run_id = _load_wandb_run_id_from_file()
+    if run_id is None and is_resumed_execution:
+        run_id = _infer_wandb_run_id_from_local_dir()
+    if run_id is not None:
+        kwargs['id'] = run_id
+        kwargs['resume'] = 'allow'
+
     wandb.init(**kwargs)
     if wandb.run:
+        run_id = getattr(wandb.run, 'id', None)
+        if run_id is not None:
+            with open_dict(cfg.general):
+                cfg.general.wandb_run_id = run_id
+            _save_wandb_run_id_to_file(run_id)
         # Track all metrics against explicit epoch when provided.
         wandb.define_metric("epoch")
         wandb.define_metric("*", step_metric="epoch")
     wandb.save('*.txt')
+
+
+def _save_wandb_run_id_to_file(run_id: str) -> None:
+    run_id_path = os.path.join(os.getcwd(), '.wandb_run_id')
+    with open(run_id_path, 'w', encoding='utf-8') as f:
+        f.write(run_id)
+
+
+def _load_wandb_run_id_from_file():
+    run_id_path = os.path.join(os.getcwd(), '.wandb_run_id')
+    if not os.path.isfile(run_id_path):
+        return None
+
+    with open(run_id_path, 'r', encoding='utf-8') as f:
+        run_id = f.read().strip()
+
+    if re.fullmatch(r'[A-Za-z0-9]+', run_id):
+        return run_id
+    return None
+
+
+def _extract_wandb_run_id(folder_name: str):
+    match = re.fullmatch(r'run-\d{8}_\d{6}-([A-Za-z0-9]+)', folder_name)
+    if match:
+        return match.group(1)
+    return None
+
+
+def _infer_wandb_run_id_from_local_dir():
+    wandb_dir = os.path.join(os.getcwd(), 'wandb')
+    if not os.path.isdir(wandb_dir):
+        return None
+
+    latest_run_link = os.path.join(wandb_dir, 'latest-run')
+    if os.path.exists(latest_run_link):
+        latest_name = os.path.basename(os.path.realpath(latest_run_link))
+        run_id = _extract_wandb_run_id(latest_name)
+        if run_id is not None:
+            return run_id
+
+    run_dirs = []
+    for name in os.listdir(wandb_dir):
+        full_path = os.path.join(wandb_dir, name)
+        if os.path.isdir(full_path) and name.startswith('run-'):
+            run_dirs.append(full_path)
+    run_dirs.sort(key=os.path.getmtime, reverse=True)
+
+    for run_dir in run_dirs:
+        run_id = _extract_wandb_run_id(os.path.basename(run_dir))
+        if run_id is not None:
+            return run_id
+    return None

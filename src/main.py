@@ -9,7 +9,7 @@ import numpy as np
 
 torch.cuda.empty_cache()
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, open_dict
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.utilities.warnings import PossibleUserWarning
@@ -90,11 +90,24 @@ def get_resume_adaptive(cfg, model_kwargs):
         filtered_state_dict = {k: v for k, v in state_dict.items() if not k.startswith("guidance_model.")}
         model.load_state_dict(filtered_state_dict, strict=False)
     
+    checkpoint_wandb_run_id = None
+    if "hyper_parameters" in ckpt:
+        checkpoint_cfg = ckpt.get("hyper_parameters", {}).get("cfg", None)
+        if checkpoint_cfg is not None:
+            checkpoint_general = checkpoint_cfg.get("general", None)
+            if checkpoint_general is not None:
+                checkpoint_wandb_run_id = checkpoint_general.get("wandb_run_id", None)
+
     new_cfg = ckpt.get("hyper_parameters", {}).get("cfg", cfg) if "hyper_parameters" in ckpt else cfg
 
     for category in cfg:
-        for arg in cfg[category]:
-            new_cfg[category][arg] = cfg[category][arg]
+        with open_dict(new_cfg[category]):
+            for arg in cfg[category]:
+                new_cfg[category][arg] = cfg[category][arg]
+
+    if new_cfg.general.get("wandb_run_id", None) is None and checkpoint_wandb_run_id is not None:
+        with open_dict(new_cfg.general):
+            new_cfg.general.wandb_run_id = checkpoint_wandb_run_id
 
     new_cfg.general.resume = resume_path
     new_cfg.general.name = new_cfg.general.name + '_resume'
@@ -333,8 +346,11 @@ def main(cfg: DictConfig):
         callbacks.append(checkpoint_callback)
 
     if cfg.train.ema_decay > 0:
-        ema_callback = utils.EMA(decay=cfg.train.ema_decay)
-        callbacks.append(ema_callback)
+        if hasattr(utils, "EMA"):
+            ema_callback = utils.EMA(decay=cfg.train.ema_decay)
+            callbacks.append(ema_callback)
+        else:
+            print("[WARNING] cfg.train.ema_decay > 0 but src.utils.EMA is not available. Continuing without EMA.")
 
     name = cfg.general.name
     if name == 'debug':

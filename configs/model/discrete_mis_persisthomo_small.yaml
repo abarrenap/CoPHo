@@ -6,6 +6,7 @@ model: 'graph_tf'
 diffusion_steps: 1000
 diffusion_noise_schedule: 'cosine'
 n_layers: 3
+dropout: 0.05
 
 hidden_mlp_dims: {'X': 16, 'E': 16, 'y': 16}
 hidden_dims: {'dx': 16, 'de': 16, 'dy': 16, 'n_head': 2, 'dim_ffX': 16, 'dim_ffE': 16, 'dim_ffy': 16}
