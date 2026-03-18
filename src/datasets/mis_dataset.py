@@ -143,6 +143,17 @@ class MISDataset(InMemoryDataset):
         
         if len(data_list) == 0:
             raise ValueError(f"No graphs found in {filepath}")
+
+        # Optional mode used by conditioned generation via trainer.test:
+        # treat the full input file as the test split (and keep train/val
+        # non-empty to satisfy downstream shape/stat initialization).
+        if os.environ.get("MIS_USE_FULL_AS_TEST", "0") == "1":
+            split_data = data_list
+            if self.pre_transform is not None:
+                split_data = [self.pre_transform(data) for data in split_data]
+            data, slices = self.collate(split_data)
+            torch.save((data, slices), self.processed_paths[0])
+            return
         
         # Split into train/val/test
         num_graphs = len(data_list)

@@ -746,12 +746,12 @@ class LiftedDenoisingDiffusion(pl.LightningModule):
                     print('\r{}/{} complete'.format(i+1, num_molecules), end='', flush=True)
 
             # Visualize the final molecules
-            print("Visualizing molecules...")
+            #print("Visualizing molecules...")
             current_path = os.getcwd()
             result_path = os.path.join(current_path,
                                        f'graphs/{self.name}/epoch{self.current_epoch}_b{batch_id}/')
             self.visualization_tools.visualize(result_path, molecule_list, save_final, log='graph')
-            print("Done.")
+            #print("Done.")
 
         return molecule_list
 

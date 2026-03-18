@@ -327,38 +327,69 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         print("samples_left_to_generate:", samples_left_to_generate)
 
         test_loader = self.trainer.datamodule.test_dataloader()
+        cond_chunks = []
+        n_nodes_chunks = []
         for data in test_loader:
-            cond = data.cond.to(self.device)
-            #print(data.X.shape, data.edge_attr.shape)
-            #print("[DEBUG] cond shape", cond.shape)
-            if cond.dim() == 1:
-                cond = cond.unsqueeze(dim=1)
-            break
+            cond_i = data.cond.to(self.device)
+            if cond_i.dim() == 1:
+                cond_i = cond_i.unsqueeze(0)
+            elif cond_i.dim() > 2:
+                cond_i = cond_i.view(cond_i.size(0), -1)
+            cond_chunks.append(cond_i)
+
+            if hasattr(data, "ptr") and data.ptr is not None:
+                n_nodes_i = torch.diff(data.ptr).to(self.device, dtype=torch.long)
+            else:
+                n_nodes_i = torch.bincount(data.batch).to(self.device, dtype=torch.long)
+            n_nodes_chunks.append(n_nodes_i)
+
+        if len(cond_chunks) == 0:
+            raise RuntimeError("test_dataloader returned no batches, cannot generate conditioned samples.")
+
+        cond = torch.cat(cond_chunks, dim=0)
+        cond_num_nodes = torch.cat(n_nodes_chunks, dim=0)
+        if cond.size(0) != cond_num_nodes.size(0):
+            raise RuntimeError(
+                f"Condition count ({cond.size(0)}) does not match node-count entries ({cond_num_nodes.size(0)})."
+            )
+
+        if samples_left_to_generate > cond.size(0):
+            self.print(
+                f"[WARNING] Requested {samples_left_to_generate} samples, but only {cond.size(0)} "
+                "conditions are available in the test set. Reducing requested samples."
+            )
+            samples_left_to_generate = int(cond.size(0))
+            samples_left_to_save = min(samples_left_to_save, samples_left_to_generate)
 
         samples = []
         id = 0
+        cond_idx = 0
+        all_chain_X = []
+        all_chain_E = []
         while samples_left_to_generate > 0:
             self.print(f'Samples left to generate: {samples_left_to_generate}/'
                        f'{self.cfg.general.final_model_samples_to_generate}', end='', flush=True)
 
             bs = self.cfg.train.batch_size
-            to_generate = min(samples_left_to_generate, bs, len(cond))
-            to_save = min(samples_left_to_save, bs, len(cond))
-            chains_save = min(chains_left_to_save, bs, len(cond))
+            remaining_cond = len(cond) - cond_idx
+            if remaining_cond <= 0:
+                break
+            to_generate = min(samples_left_to_generate, bs, remaining_cond)
+            to_save = min(samples_left_to_save, bs, remaining_cond)
+            chains_save = min(chains_left_to_save, bs, remaining_cond)
             if self.number_chain_steps <= 0:
                 chains_save = 0
-            cond_batch = cond[:to_generate]
+            cond_batch = cond[cond_idx:cond_idx + to_generate]
+            cond_num_nodes_batch = cond_num_nodes[cond_idx:cond_idx + to_generate]
 
-            all_chain_X = []  # 用于保存所有 batch 的 chain_X
-            all_chain_E = []  # 用于保存所有 batch 的 chain_E
-
-            molecule_list, chain_X, chain_E = self.sample_batch(id, to_generate, num_nodes=None, save_final=to_save,
+            molecule_list, chain_X, chain_E = self.sample_batch(id, to_generate, num_nodes=cond_num_nodes_batch, save_final=to_save,
                                              keep_chain=chains_save, number_chain_steps=self.number_chain_steps,
                                              y_cond=cond_batch, cond=cond_batch)
             samples.extend(molecule_list)
             all_chain_X.append(chain_X)
             all_chain_E.append(chain_E)
             id += to_generate
+            cond_idx += to_generate
             samples_left_to_save -= to_save
             samples_left_to_generate -= to_generate
             chains_left_to_save -= chains_save
