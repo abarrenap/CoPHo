@@ -1,0 +1,16 @@
+[34m[1mwandb[0m: [33mWARNING[0m Symlinked 1 file into the W&B run directory; call wandb.save again to sync new files.
+Restored all states from the checkpoint at /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-04-09/12-24-32-degen_100/checkpoints/degen_100/last.ckpt
+Starting train epoch...
+Epoch 99: Val NLL 1097.73 -- Val Atom type KL 43.35 --  Val Edge type KL: 646.25
+Val loss: 1097.7290 	 Best val loss:  1097.7290
+
+Epoch 99: X_CE: -1.000 -- E_CE: -1.000 -- y_CE: -1.000 -- 0.4s
+Epoch 99: None -- None
+CUDA is not available. Skipping memory summary.
+`Trainer.fit` stopped: `max_epochs=100` reached.
+Starting test...
+samples_left_to_generate: 100
+[WARNING] Requested 100 samples, but only 20 conditions are available in the test set. Reducing requested samples.
+Samples left to generate: 20/100
+/opt/anaconda3/envs/copho/lib/python3.9/site-packages/pytorch_lightning/trainer/call.py:52: UserWarning: Detected KeyboardInterrupt, attempting graceful shutdown...
+  rank_zero_warn("Detected KeyboardInterrupt, attempting graceful shutdown...")
