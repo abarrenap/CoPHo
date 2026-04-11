@@ -25,7 +25,7 @@ def load_cfg_from_checkpoint(checkpoint_path: str):
     raise ValueError("Checkpoint does not contain cfg in hyper_parameters or root")
 
 
-def build_datamodule_and_infos(cfg):
+def build_datamodule_and_infos(cfg, plot_graphs: bool = False):
     dataset_name = cfg.dataset.name
 
     if dataset_name in ["sbm", "comm20", "planar", "enzymes"]:
@@ -45,7 +45,7 @@ def build_datamodule_and_infos(cfg):
 
         dataset_infos = SpectreDatasetInfos(datamodule, cfg.dataset)
         train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == "discrete" else TrainAbstractMetrics()
-        visualization_tools = NonMolecularVisualization()
+        visualization_tools = NonMolecularVisualization() if plot_graphs else None
 
         if cfg.model.type == "discrete" and cfg.model.extra_features is not None:
             extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)
@@ -78,7 +78,7 @@ def build_datamodule_and_infos(cfg):
         sampling_metrics = SBMSamplingMetrics(datamodule)
         dataset_infos = DIMACSDatasetInfos(datamodule.datasets)
         train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == "discrete" else TrainAbstractMetrics()
-        visualization_tools = NonMolecularVisualization()
+        visualization_tools = NonMolecularVisualization() if plot_graphs else None
 
         if cfg.model.type == "discrete" and cfg.model.extra_features is not None:
             extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)
@@ -111,7 +111,7 @@ def build_datamodule_and_infos(cfg):
         sampling_metrics = SBMSamplingMetrics(datamodule)
         dataset_infos = MISDatasetInfos(datamodule.datasets)
         train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == "discrete" else TrainAbstractMetrics()
-        visualization_tools = NonMolecularVisualization()
+        visualization_tools = NonMolecularVisualization() if plot_graphs else None
 
         if cfg.model.type == "discrete" and cfg.model.extra_features is not None:
             extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)
@@ -144,7 +144,7 @@ def build_datamodule_and_infos(cfg):
         sampling_metrics = TSPSamplingMetrics(datamodule)
         dataset_infos = TSPDatasetInfos(datamodule.datasets)
         train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == "discrete" else TrainAbstractMetrics()
-        visualization_tools = WeightedVisualization()
+        visualization_tools = WeightedVisualization() if plot_graphs else None
 
         if cfg.model.type == "discrete" and cfg.model.extra_features is not None:
             extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)
@@ -286,6 +286,7 @@ def generate_conditioned_graphs_via_trainer_test(
     guidance_path: Optional[str] = None,
     device: str = "cpu",
     num_samples: Optional[int] = None,
+    plot_graphs: bool = False,
 ) -> None:
     cfg, _ = load_cfg_from_checkpoint(checkpoint_path)
     if cfg.dataset.name != "mis":
@@ -308,12 +309,12 @@ def generate_conditioned_graphs_via_trainer_test(
         with open_dict(cfg):
             cfg.dataset.datadir = temp_root
             cfg.general.final_model_samples_to_generate = int(num_samples)
-            cfg.general.final_model_samples_to_save = int(num_samples)
+            cfg.general.final_model_samples_to_save = int(num_samples) if plot_graphs else 0
             cfg.general.wandb = "disabled"
-            if int(getattr(cfg.general, "number_chain_steps", 0)) <= 0:
+            if not plot_graphs or int(getattr(cfg.general, "number_chain_steps", 0)) <= 0:
                 cfg.general.final_model_chains_to_save = 0
 
-        datamodule, model_kwargs = build_datamodule_and_infos(cfg)
+        datamodule, model_kwargs = build_datamodule_and_infos(cfg, plot_graphs=plot_graphs)
         model = build_model(cfg, model_kwargs, checkpoint_path, guidance_path=guidance_path)
 
         device_t = torch.device(device)
@@ -364,7 +365,8 @@ def generate_conditioned_graphs(checkpoint_path: str,
                                  device: str = "cpu",
                                  num_samples: Optional[int] = None,
                                  per_embedding: int = 1,
-                                 use_trainer_test: bool = False):
+                                 use_trainer_test: bool = False,
+                                 plot_graphs: bool = False):
     if use_trainer_test:
         if per_embedding != 1:
             print("[WARNING] per_embedding is ignored when use_trainer_test=True")
@@ -375,12 +377,13 @@ def generate_conditioned_graphs(checkpoint_path: str,
             guidance_path=guidance_path,
             device=device,
             num_samples=num_samples,
+            plot_graphs=plot_graphs,
         )
 
     device_t = torch.device(device)
 
     cfg, _ = load_cfg_from_checkpoint(checkpoint_path)
-    datamodule, model_kwargs = build_datamodule_and_infos(cfg)
+    datamodule, model_kwargs = build_datamodule_and_infos(cfg, plot_graphs=plot_graphs)
     model = build_model(cfg, model_kwargs, checkpoint_path, guidance_path=guidance_path)
     model.to(device_t)
     model.eval()
@@ -419,9 +422,10 @@ def generate_conditioned_graphs(checkpoint_path: str,
 
     samples = []
     samples_left_to_generate = num_samples
-    samples_left_to_save = num_samples
-    chains_left_to_save = int(
-        getattr(cfg.general, "final_model_chains_to_save", getattr(cfg.general, "chains_to_save", 0))
+    samples_left_to_save = num_samples if plot_graphs else 0
+    chains_left_to_save = (
+        int(getattr(cfg.general, "final_model_chains_to_save", getattr(cfg.general, "chains_to_save", 0)))
+        if plot_graphs else 0
     )
     number_chain_steps = int(cfg.general.number_chain_steps)
     batch_id = 0
@@ -474,10 +478,10 @@ def generate_conditioned_graphs(checkpoint_path: str,
 
 
 if __name__ == "__main__":
-    checkpoint = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-16/21-01-09-mixed_exp1/checkpoints/mixed_exp1/epoch=69.ckpt"
-    graphs = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/mis/raw/test_32.txt"
+    checkpoint = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-04-09/18-27-36-degen_800/checkpoints/degen_600/last.ckpt"
+    graphs = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/mis/raw/conditions.txt"
 
-    output = "../generated/32.txt"
+    output = "../generated/gen_800.txt"
     guidance = '/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_community.pth'
     device = "cpu"
     per_embedding = 1

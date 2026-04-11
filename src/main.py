@@ -120,6 +120,12 @@ def get_resume_adaptive(cfg, model_kwargs):
 @hydra.main(version_base='1.3', config_path='../configs', config_name='config')
 def main(cfg: DictConfig):
     dataset_config = cfg["dataset"]
+    plot_graphs = bool(cfg.general.get("plot_graphs", False))
+    if not plot_graphs:
+        with open_dict(cfg.general):
+            cfg.general.chains_to_save = 0
+            cfg.general.final_model_chains_to_save = 0
+        print("Plotting disabled (general.plot_graphs=False): graph visualization is skipped; generated .txt outputs remain enabled.")
 
     if dataset_config["name"] in ['sbm', 'comm20', 'planar', 'enzymes']:
         from datasets.spectre_dataset_multi import SpectreGraphDataModule, SpectreDatasetInfos
@@ -141,7 +147,7 @@ def main(cfg: DictConfig):
 
         dataset_infos = SpectreDatasetInfos(datamodule, dataset_config)
         train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == 'discrete' else TrainAbstractMetrics()
-        visualization_tools = NonMolecularVisualization()
+        visualization_tools = NonMolecularVisualization() if plot_graphs else None
 
         if cfg.model.type == 'discrete' and cfg.model.extra_features is not None:
             extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)
@@ -166,7 +172,7 @@ def main(cfg: DictConfig):
         sampling_metrics = SBMSamplingMetrics(datamodule)
         dataset_infos = DIMACSDatasetInfos(datamodule.datasets)
         train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == 'discrete' else TrainAbstractMetrics()
-        visualization_tools = NonMolecularVisualization()
+        visualization_tools = NonMolecularVisualization() if plot_graphs else None
 
         if cfg.model.type == 'discrete' and cfg.model.extra_features is not None:
             extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)
@@ -190,7 +196,7 @@ def main(cfg: DictConfig):
         sampling_metrics = SBMSamplingMetrics(datamodule)
         dataset_infos = MISDatasetInfos(datamodule.datasets)
         train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == 'discrete' else TrainAbstractMetrics()
-        visualization_tools = NonMolecularVisualization()
+        visualization_tools = NonMolecularVisualization() if plot_graphs else None
 
         if cfg.model.type == 'discrete' and cfg.model.extra_features is not None:
             extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)
@@ -214,7 +220,7 @@ def main(cfg: DictConfig):
         sampling_metrics = TSPSamplingMetrics(datamodule)
         dataset_infos = TSPDatasetInfos(datamodule.datasets)
         train_metrics = TrainAbstractMetricsDiscrete() if cfg.model.type == 'discrete' else TrainAbstractMetrics()
-        visualization_tools = WeightedVisualization()
+        visualization_tools = WeightedVisualization() if plot_graphs else None
 
         if cfg.model.type == 'discrete' and cfg.model.extra_features is not None:
             extra_features = ExtraFeatures(cfg.model.extra_features, dataset_info=dataset_infos)
@@ -272,7 +278,7 @@ def main(cfg: DictConfig):
 
         # We do not evaluate novelty during training
         sampling_metrics = SamplingMolecularMetrics(dataset_infos, train_smiles)
-        visualization_tools = MolecularVisualization(cfg.dataset.remove_h, dataset_infos=dataset_infos)
+        visualization_tools = MolecularVisualization(cfg.dataset.remove_h, dataset_infos=dataset_infos) if plot_graphs else None
 
         model_kwargs = {'dataset_infos': dataset_infos, 'train_metrics': train_metrics,
                         'sampling_metrics': sampling_metrics, 'visualization_tools': visualization_tools,
@@ -299,6 +305,11 @@ def main(cfg: DictConfig):
         resume_dir = os.path.dirname(resume_dir)  # Remover carpeta del modelo
         resume_dir = os.path.dirname(resume_dir)  # Remover carpeta checkpoints
         os.chdir(resume_dir)
+
+    if not plot_graphs:
+        with open_dict(cfg.general):
+            cfg.general.chains_to_save = 0
+            cfg.general.final_model_chains_to_save = 0
 
     utils.create_folders(cfg)
 

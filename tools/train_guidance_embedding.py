@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument("--batch-size", type=int, default=None)
     parser.add_argument("--normalize-emb", action="store_true")
     parser.add_argument("--save-dir", type=str, default="/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights")
-    parser.add_argument("--save-name", type=str, default="CLASSIFIER_struct_embedding_community.pth")
+    parser.add_argument("--save-name", type=str, default="CLASSIFIER_struct_embedding_community_150.pth")
     return parser.parse_args()
 
 
@@ -57,7 +57,7 @@ def main():
             num_workers = 0
         class general:
             gpus = 0
-            name = "guidance_embedding_train"
+            name = "guidance_embedding_train_150"
 
     cfg = SimpleCfg()
     if args.batch_size is not None:

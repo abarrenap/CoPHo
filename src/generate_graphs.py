@@ -21,6 +21,7 @@ def generate_graphs(
     num_samples: int = 32,
     fixed_size: Optional[int] = None,
     graph_sizes: Optional[List[int]] = None,
+    plot_graphs: bool = False,
 ):
     if num_samples < 1:
         raise ValueError("num_samples must be >= 1")
@@ -40,7 +41,7 @@ def generate_graphs(
     device_t = torch.device(device)
 
     cfg, _ = load_cfg_from_checkpoint(checkpoint_path)
-    _, model_kwargs = build_datamodule_and_infos(cfg)
+    _, model_kwargs = build_datamodule_and_infos(cfg, plot_graphs=plot_graphs)
 
     model = build_model(cfg, model_kwargs, checkpoint_path, guidance_path=guidance_path)
     model.to(device_t)
@@ -72,8 +73,8 @@ def generate_graphs(
 
     samples = []
     samples_left_to_generate = num_samples
-    samples_left_to_save = num_samples
-    chains_left_to_save = int(cfg.general.chains_to_save)
+    samples_left_to_save = num_samples if plot_graphs else 0
+    chains_left_to_save = int(cfg.general.chains_to_save) if plot_graphs else 0
     batch_id = 0
     size_idx = 0
 
