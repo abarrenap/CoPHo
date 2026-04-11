@@ -5,6 +5,7 @@ name: 'graph-tf-model'      # Warning: 'debug' and 'test' are reserved name that
 wandb: 'online'             # online | offline | disabled
 wandb_run_id: null          # If set (or inferred on resume), W&B will append to this existing run
 gpus: 1                     # Multi-gpu is not implemented on this branch
+plot_graphs: false          # Set true to enable graph/chain plotting
 
 
 resume: null            # If resume, path to ckpt file from outputs directory in main directory
