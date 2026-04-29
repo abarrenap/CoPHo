@@ -1,0 +1,20 @@
+{
+  "os": "macOS-26.3.1-arm64-arm-64bit",
+  "python": "CPython 3.9.23",
+  "startedAt": "2026-04-28T18:01:27.935968Z",
+  "args": [
+    "--config-name=config_mis_persisthomo",
+    "general.name=bimodal_2"
+  ],
+  "program": "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/main.py",
+  "codePath": "src/main.py",
+  "git": {
+    "remote": "https://github.com/abarrenap/CoPHo.git",
+    "commit": "90ad5bfbf6211e2f3c56751e3681428a4bcdbef0"
+  },
+  "email": "aimarbarrena@gmail.com",
+  "root": "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-04-28/20-01-24-bimodal_2",
+  "host": "MacBook-Air-de-Aimar-7.local",
+  "executable": "/opt/anaconda3/envs/copho/bin/python",
+  "writerId": "dgzfx6d7llao0fgfaw57ywhh0vw5p499"
+}

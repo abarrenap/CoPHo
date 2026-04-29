@@ -5,6 +5,7 @@ import tempfile
 from glob import glob
 from pathlib import Path
 from typing import List, Optional, Tuple
+import argparse
 
 import torch
 from omegaconf import open_dict
@@ -473,19 +474,42 @@ def generate_conditioned_graphs(checkpoint_path: str,
             
             pbar.update(to_generate)
 
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     save_generated_graphs(samples, output_path)
     print(f"Saved {len(samples)} graphs to {output_path}")
 
 
 if __name__ == "__main__":
-    checkpoint = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-04-09/18-27-36-degen_800/checkpoints/degen_600/last.ckpt"
-    graphs = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/mis/raw/conditions.txt"
+    # Keep previous hardcoded values as CLI defaults
+    DEFAULT_CHECKPOINT = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-04-28/20-01-24-bimodal_2/checkpoints/bimodal_2/epoch=39.ckpt"
+    DEFAULT_GRAPHS = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/bimodal/raw/conditions.txt"
+    DEFAULT_OUTPUT = "../generated/bimodal_39.txt"
+    DEFAULT_GUIDANCE = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_bimodal.pth"
+    DEFAULT_DEVICE = "cpu"
+    DEFAULT_PER_EMBEDDING = 1
+    DEFAULT_USE_TRAINER_TEST = True
 
-    output = "../generated/gen_800.txt"
-    guidance = '/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_community.pth'
-    device = "cpu"
-    per_embedding = 1
-    use_trainer_test = True
+    parser = argparse.ArgumentParser(description="Generate conditioned graphs from a checkpoint.")
+    parser.add_argument("--checkpoint", type=str, default=DEFAULT_CHECKPOINT, help="Path to .ckpt file")
+    parser.add_argument("--graphs", type=str, default=DEFAULT_GRAPHS, help="Path to input conditions .txt")
+    parser.add_argument("--output", type=str, default=DEFAULT_OUTPUT, help="Path to output generated .txt")
+    parser.add_argument("--guidance", type=str, default=DEFAULT_GUIDANCE, help="Path to guidance model .pth (optional)")
+    parser.add_argument("--device", type=str, default=DEFAULT_DEVICE, choices=["cpu", "cuda"], help="Execution device")
+    parser.add_argument("--per-embedding", type=int, default=DEFAULT_PER_EMBEDDING, help="Samples per input embedding")
+
+    parser.add_argument("--use-trainer-test", dest="use_trainer_test", action="store_true")
+    parser.add_argument("--no-use-trainer-test", dest="use_trainer_test", action="store_false")
+    parser.set_defaults(use_trainer_test=DEFAULT_USE_TRAINER_TEST)
+
+    args = parser.parse_args()
+
+    checkpoint = args.checkpoint
+    graphs = args.graphs
+    output = args.output
+    guidance = args.guidance
+    device = args.device
+    per_embedding = args.per_embedding
+    use_trainer_test = args.use_trainer_test
 
     generate_conditioned_graphs(
         checkpoint_path=checkpoint,

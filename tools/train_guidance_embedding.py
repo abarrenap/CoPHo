@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument("--batch-size", type=int, default=None)
     parser.add_argument("--normalize-emb", action="store_true")
     parser.add_argument("--save-dir", type=str, default="/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights")
-    parser.add_argument("--save-name", type=str, default="CLASSIFIER_struct_embedding_community_150.pth")
+    parser.add_argument("--save-name", type=str, default="CLASSIFIER_struct_embedding_bimodal.pth")
     return parser.parse_args()
 
 
@@ -51,13 +51,13 @@ def main():
     # Load data using MISDataModule
     class SimpleCfg:
         class dataset:
-            datadir = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/mis"
+            datadir = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/bimodal"
         class train:
             batch_size = 32
             num_workers = 0
         class general:
             gpus = 0
-            name = "guidance_embedding_train_150"
+            name = "guidance_embedding_train_bimodal"
 
     cfg = SimpleCfg()
     if args.batch_size is not None:
