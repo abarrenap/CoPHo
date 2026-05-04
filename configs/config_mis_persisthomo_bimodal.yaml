@@ -1,0 +1,12 @@
+defaults:
+    - _self_
+    - general: general_mis_bimodal
+    - model: discrete_mis_persisthomo_bimodal
+    - train: train_mis_bimodal
+    - dataset: mis
+
+hydra:
+  job:
+    chdir: True
+  run:
+    dir: ../outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}-${general.name}

@@ -71,6 +71,10 @@ class TrainLossDiscrete(nn.Module):
         self.edge_loss = CrossEntropyMetric()
         self.y_loss = CrossEntropyMetric()
         self.lambda_train = lambda_train
+        self.edge_label_smoothing = 0.0
+
+    def set_edge_label_smoothing(self, value: float):
+        self.edge_label_smoothing = float(value)
 
     def forward(self, masked_pred_X, masked_pred_E, pred_y, true_X, true_E, true_y, log: bool, epoch=None):
         """ Compute train metrics
@@ -98,6 +102,14 @@ class TrainLossDiscrete(nn.Module):
 
         loss_X = self.node_loss(flat_pred_X, flat_true_X) if true_X.numel() > 0 else torch.tensor(0.0, device=masked_pred_X.device)
         loss_E = self.edge_loss(flat_pred_E, flat_true_E) if true_E.numel() > 0 else torch.tensor(0.0, device=masked_pred_E.device)
+        if flat_true_E.numel() > 0 and self.edge_label_smoothing > 0:
+            smooth_targets = torch.argmax(flat_true_E, dim=-1)
+            loss_E = torch.nn.functional.cross_entropy(
+                flat_pred_E,
+                smooth_targets,
+                reduction='sum',
+                label_smoothing=self.edge_label_smoothing,
+            ) / flat_pred_E.size(0)
         #loss_y = self.y_loss(pred_y, true_y) if true_y.numel() > 0 else torch.tensor(0.0, device=pred_y.device)
         loss_y = torch.tensor(0.0, device=masked_pred_X.device)
 
@@ -131,5 +143,4 @@ class TrainLossDiscrete(nn.Module):
             wandb.log(to_log, commit=False)
 
         return to_log
-
 

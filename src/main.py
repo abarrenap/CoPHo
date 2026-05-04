@@ -11,7 +11,7 @@ torch.cuda.empty_cache()
 import hydra
 from omegaconf import DictConfig, open_dict
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.utilities.warnings import PossibleUserWarning
 
 from src import utils
@@ -355,6 +355,17 @@ def main(cfg: DictConfig):
                                               save_last=True,
                                               every_n_epochs=1)
         callbacks.append(checkpoint_callback)
+
+    early_stopping_cfg = cfg.train.get("early_stopping", None)
+    if early_stopping_cfg and early_stopping_cfg.get("enabled", False):
+        callbacks.append(
+            EarlyStopping(
+                monitor=early_stopping_cfg.get("monitor", "val/epoch_NLL"),
+                mode=early_stopping_cfg.get("mode", "min"),
+                patience=early_stopping_cfg.get("patience", 8),
+                min_delta=early_stopping_cfg.get("min_delta", 0.0),
+            )
+        )
 
     if cfg.train.ema_decay > 0:
         if hasattr(utils, "EMA"):

@@ -1,0 +1,63 @@
+general:
+  name: bimodal_3
+  wandb: online
+  wandb_run_id: null
+  gpus: 1
+  plot_graphs: false
+  resume: null
+  test_only: null
+  guidance_path: /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_bimodal.pth
+  check_val_every_n_epochs: 2
+  sample_every_val: 4
+  val_check_interval: null
+  samples_to_generate: 32
+  samples_to_save: 4
+  chains_to_save: 0
+  log_every_steps: 50
+  number_chain_steps: 0
+  final_model_samples_to_generate: 100
+  final_model_samples_to_save: 100
+  final_model_chains_to_save: 0
+  evaluate_all_checkpoints: false
+model:
+  type: discrete
+  use_persist_homo: true
+  extra_features: null
+  transition: uniform
+  model: graph_tf
+  diffusion_steps: 1000
+  diffusion_noise_schedule: cosine
+  n_layers: 5
+  dropout: 0.15
+  hidden_mlp_dims:
+    X: 32
+    E: 32
+    'y': 32
+  hidden_dims:
+    dx: 32
+    de: 32
+    dy: 32
+    n_head: 4
+    dim_ffX: 32
+    dim_ffE: 32
+    dim_ffy: 32
+  lambda_train:
+  - 3
+  - 0
+train:
+  n_epochs: 100
+  batch_size: 32
+  lr: 0.0001
+  clip_grad: null
+  save_model: true
+  num_workers: 0
+  ema_decay: 0
+  progress_bar: true
+  weight_decay: 1.0e-05
+  optimizer: adamw
+  seed: 0
+  edge_label_smoothing: 0.05
+dataset:
+  name: mis
+  remove_h: null
+  datadir: /Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/bimodal

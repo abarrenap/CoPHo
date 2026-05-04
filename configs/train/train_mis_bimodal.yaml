@@ -1,0 +1,13 @@
+# Training settings
+n_epochs: 100
+batch_size: 32
+lr: 0.0001
+clip_grad: null
+save_model: True
+num_workers: 0
+ema_decay: 0
+progress_bar: True
+weight_decay: 1e-5
+optimizer: adamw
+seed: 0
+edge_label_smoothing: 0.05

@@ -481,9 +481,9 @@ def generate_conditioned_graphs(checkpoint_path: str,
 
 if __name__ == "__main__":
     # Keep previous hardcoded values as CLI defaults
-    DEFAULT_CHECKPOINT = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-04-28/20-01-24-bimodal_2/checkpoints/bimodal_2/epoch=39.ckpt"
+    DEFAULT_CHECKPOINT = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-04-29/22-16-11-bimodal_3/checkpoints/bimodal_3/epoch=67.ckpt"
     DEFAULT_GRAPHS = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/data/bimodal/raw/conditions.txt"
-    DEFAULT_OUTPUT = "../generated/bimodal_39.txt"
+    DEFAULT_OUTPUT = "../generated/bimodal_2_67.txt"
     DEFAULT_GUIDANCE = "/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/src/weights/CLASSIFIER_struct_embedding_bimodal.pth"
     DEFAULT_DEVICE = "cpu"
     DEFAULT_PER_EMBEDDING = 1

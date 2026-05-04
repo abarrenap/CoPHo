@@ -57,6 +57,7 @@ class DiscreteDenoisingDiffusion(pl.LightningModule):
         self.dataset_info = dataset_infos
 
         self.train_loss = TrainLossDiscrete(self.cfg.model.lambda_train)
+        self.train_loss.set_edge_label_smoothing(self.cfg.train.get('edge_label_smoothing', 0.0))
 
         self.val_nll = NLL()
         self.val_X_kl = SumExceptBatchKL()
