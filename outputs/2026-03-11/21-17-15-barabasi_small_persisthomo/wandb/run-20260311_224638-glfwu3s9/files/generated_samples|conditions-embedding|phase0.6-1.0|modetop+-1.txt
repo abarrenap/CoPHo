@@ -1,1 +1,0 @@
-/Users/aimarbarrenapol/Documents/EHU/TFG/CoPHo/outputs/2026-03-11/21-17-15-barabasi_small_persisthomo/generated_samples|conditions-embedding|phase0.6-1.0|modetop+-1.txt
